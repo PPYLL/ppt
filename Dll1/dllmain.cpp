@@ -8,7 +8,7 @@
 
 
 //保存函数原型（用指针存储要拦截的API）
-LRESULT (*OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
+LRESULT (*__stdcall OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
