@@ -13,8 +13,8 @@ LRESULT (*OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
 	char ClassName[1024],WindowText[1024];
-	GetClassName(hwnd,&ClassName,sizeof(ClassName));
-	GetWindowText(hwnd,&WindowText,sizeof(WindowText));
+	GetClassName(hwnd,ClassName,sizeof(ClassName));
+	GetWindowText(hwnd,WindowText,sizeof(WindowText));
 	printf("\n\nSendMessageWCalled::::::\n");
 	printf("Hwnd::  %x",hwnd);
 	printf("wintitle::  %s\n",WindowText);
