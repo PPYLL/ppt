@@ -8,7 +8,7 @@
 
 
 //保存函数原型（用指针存储要拦截的API）
-LRESULT (*__stdcall OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
+LRESULT (__stdcall* OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
@@ -17,6 +17,7 @@ void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	GetWindowText(hwnd,WindowText,sizeof(WindowText));
 	printf("\n\nSendMessageWCalled::::::\n");
 	printf("Hwnd::  %x",hwnd);
+ printf("Hwnd::  %d",hwnd);
 	printf("wintitle::  %s\n",WindowText);
 	printf("winClass::  %s\n",ClassName);
 	printf("Msg::  %u\n",Msg);
