@@ -24,27 +24,28 @@ void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
                 NULL
                 );
 
-        */
+    */
 	GetClassName(hwnd,ClassName,sizeof(ClassName));
 	GetWindowText(hwnd,WindowText,sizeof(WindowText));
 	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
 	char str[1024];
-	str="\n\nSendMessageWCalled::::::\n"]
+	str="\n\nSendMessageWCalled::::::\n";
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"Hwnd::  %x",hwnd);
+	//WriteFile(hFile, str,strlen(str), NULL, NULL))
+	sprintf_s(str,sizeof(str),"Hwnd::  %x\n",hwnd);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"wintitle::  %s\n",WindowText);
+	sprintf_s(str,sizeof(str),"wintitle::  %s\n",WindowText);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"winClass::  %s\n",ClassName);
+	sprintf_s(str,sizeof(str),"winClass::  %s\n",ClassName);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"Msg::  %u\n",Msg);
+	sprintf_s(str,sizeof(str),"Msg::  %u\n",Msg);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"wParam::  %u",wParam);
+	sprintf_s(str,sizeof(str),"wParam::  %u\n",wParam);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	sprintf(str,"lParam::  %u",lParam);
+	sprintf_s(str,sizeof(str),"lParam::  %u\n",lParam);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
 	//2.关闭文件
-    //CloseHandle(hFile);
+   // CloseHandle(hFile);
 	OldSendMessageW(hwnd,Msg,wParam,lParam);
 }
 
