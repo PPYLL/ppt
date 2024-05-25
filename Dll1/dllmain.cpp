@@ -6,45 +6,46 @@
 #include "detours.h"
 #pragma comment (lib,"detours.lib")
 
-
+HANDLE hFile;
 //保存函数原型（用指针存储要拦截的API）
 LRESULT (__stdcall* OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
-	char ClassName[512],WindowText[512],str[1024];
-	/*
-	HANDLE hFile = CreateFile(
-                "C:\\sendMessageW.log",
-                GENERIC_WRITE,
-                0,
-                NULL,
-                CREATE_ALWAYS,
-                FILE_ATTRIBUTE_NORMAL,
-                NULL
-                );
-
-    */
+	char ClassName[1024],WindowText[1024];
+	
 	GetClassName(hwnd,ClassName,sizeof(ClassName));
 	GetWindowText(hwnd,WindowText,sizeof(WindowText));
 	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
-	sprintf_s(str,sizeof(str),"\n\nSendMessageWCalled::::::\n");
+	char str[1024];
+	str="\n\nSendMessageWCalled::::::\n";
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	//WriteFile(hFile, str,strlen(str), NULL, NULL))
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"Hwnd::  %x\n",hwnd);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	//WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"wintitle::  %s\n",WindowText);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"winClass::  %s\n",ClassName);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"Msg::  %u\n",Msg);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"wParam::  %u\n",wParam);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	sprintf_s(str,sizeof(str),"lParam::  %u\n",lParam);
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
-	//2.关闭文件
-   // CloseHandle(hFile);
+	WriteFile(hFile, str,strlen(str), NULL, NULL);
+	
 	OldSendMessageW(hwnd,Msg,wParam,lParam);
 }
 
@@ -86,12 +87,25 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     {
 	case DLL_PROCESS_ATTACH:{
 	    AllocConsole();
+	    hFile = CreateFile(
+                "C:\\sendMessageW.log",
+                GENERIC_WRITE,
+                0,
+                NULL,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL
+                );
 	    StartHook(); 
 	    break;
 	}
     case DLL_THREAD_ATTACH:break;
     case DLL_THREAD_DETACH:break;
-    case DLL_PROCESS_DETACH:EndHook(); break;
+    case DLL_PROCESS_DETACH:{
+        EndHook(); 
+        CloseHandle(hFile);
+        break;
+    }
     }
     return TRUE;
 }
