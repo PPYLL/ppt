@@ -12,7 +12,7 @@ LRESULT (__stdcall* OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
-	char ClassName[1024],WindowText[1024];
+	char ClassName[512],WindowText[512],str[1024];
 	/*
 	HANDLE hFile = CreateFile(
                 "C:\\sendMessageW.log",
@@ -28,8 +28,7 @@ void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	GetClassName(hwnd,ClassName,sizeof(ClassName));
 	GetWindowText(hwnd,WindowText,sizeof(WindowText));
 	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
-	char str[1024];
-	str="\n\nSendMessageWCalled::::::\n";
+	sprintf_s(str,sizeof(str),"\n\nSendMessageWCalled::::::\n");
 	WriteConsole(handle,str,strlen(str),NULL,NULL);
 	//WriteFile(hFile, str,strlen(str), NULL, NULL))
 	sprintf_s(str,sizeof(str),"Hwnd::  %x\n",hwnd);
