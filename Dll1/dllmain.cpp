@@ -13,16 +13,38 @@ LRESULT (__stdcall* OldSendMessageW)(HWND,UINT,WPARAM,LPARAM) = SendMessageW;
 void NewSendMessageW(HWND hwnd,UINT Msg, WPARAM wParam, LPARAM lParam) {
 	//OldGetLocalTime(lpSystemTime);
 	char ClassName[1024],WindowText[1024];
+	/*
+	HANDLE hFile = CreateFile(
+                "C:\\sendMessageW.log",
+                GENERIC_WRITE,
+                0,
+                NULL,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL
+                );
+
+        */
 	GetClassName(hwnd,ClassName,sizeof(ClassName));
 	GetWindowText(hwnd,WindowText,sizeof(WindowText));
-	printf("\n\nSendMessageWCalled::::::\n");
-	printf("Hwnd::  %x",hwnd);
- printf("Hwnd::  %d",hwnd);
-	printf("wintitle::  %s\n",WindowText);
-	printf("winClass::  %s\n",ClassName);
-	printf("Msg::  %u\n",Msg);
-	printf("wParam::  %u",wParam);
-	printf("lParam::  %u",lParam);
+	HANDLE handle=GetStdHandle(STD_OUTPUT_HANDLE);
+	char str[1024];
+	str="\n\nSendMessageWCalled::::::\n"]
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"Hwnd::  %x",hwnd);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"wintitle::  %s\n",WindowText);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"winClass::  %s\n",ClassName);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"Msg::  %u\n",Msg);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"wParam::  %u",wParam);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	sprintf(str,"lParam::  %u",lParam);
+	WriteConsole(handle,str,strlen(str),NULL,NULL);
+	//2.关闭文件
+    //CloseHandle(hFile);
 	OldSendMessageW(hwnd,Msg,wParam,lParam);
 }
 
