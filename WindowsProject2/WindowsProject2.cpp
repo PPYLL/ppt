@@ -24,27 +24,27 @@ int main() {
                                INTERNET_FLAG_IGNORE_CERT_CN_INVALID|
                                INTERNET_FLAG_RELOAD;
     //初始化Request
-    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/b/api/file/upload_request", "HTTP/1.1", NULL, NULL, dwOpenRequestFlags, 0);
+    HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/b/api/file/upload_request", "HTTP/1.1", NULL, NULL, dwOpenRequestFlags, 0);
     if( ! hRequest ) {
         goto GOTO_EXIT;
     }
-    DWORD dwFlags, dwBuffLen = sizeof(DWORD);
-    InternetQueryOption (hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen);
+    //DWORD dwFlags, dwBuffLen = sizeof(DWORD);
+    InternetQueryOptionA (hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, NULL);
     dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
     InternetSetOption (hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof (dwFlags) );
-    bool bResult = HttpSendRequest(hRequest, headers, sizeof(headers), data, sizeof(data));
+    bool bResult = HttpSendRequestA(hRequest, headers, sizeof(headers), data, sizeof(data));
     if ( bResult ||GetLastError() != ERROR_INTERNET_INVALID_CA )
     {
         printf("errSend  errcode:%d\n",GetLastError());
     }
     //获得HTTP Response Header信息
-    char szBuff[TRANSFER_SIZE];
-    DWORD dwReadSize = TRANSFER_SIZE;
-    bResult = HttpQueryInfo(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, &dwReadSize, NULL);
+    char szBuff[2048];
+    //DWORD dwReadSize = 2048;
+    bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[dwReadSize] = '/0';
+    szBuff[2047] = '/0';
     printf("%s/n", szBuff);
     //HTTP Response 的 Body
     DWORD dwBytesAvailable;
@@ -52,21 +52,23 @@ int main() {
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
+/*
     if( dwBytesAvailable > TRANSFER_SIZE )
     {
-        printf("tool long %d /n", GetLastError(), dwBytesAvailable);
+        printf("tool long %d \n", GetLastError());
         goto GOTO_EXIT;
     }
+*/
     DWORD dwBytesRead;
     bResult = InternetReadFile(hRequest, szBuff, dwBytesAvailable, &dwBytesRead);
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[dwBytesRead] = '/0';
+    szBuff[2047] = '/0';
     printf("%s/n", szBuff);
 
     DWORD statusCode;
-    HttpQueryInfo(hConnect, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, NULL, NULL);
+    HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, NULL, NULL);
     printf("Status Code: %lu\n", statusCode);
 
 GOTO_EXIT:
@@ -80,5 +82,5 @@ GOTO_EXIT:
         InternetCloseHandle(hInternet);
     }
 
-    return 0;
+    return bResult;
 }
