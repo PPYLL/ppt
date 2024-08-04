@@ -28,7 +28,8 @@ int main() {
     if( ! hRequest ) {
         goto GOTO_EXIT;
     }
-    //DWORD dwFlags, dwBuffLen = sizeof(DWORD);
+    DWORD dwFlags; 
+//dwBuffLen = sizeof(DWORD);
     InternetQueryOptionA (hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, NULL);
     dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
     InternetSetOption (hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof (dwFlags) );
