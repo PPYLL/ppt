@@ -42,4 +42,4 @@ jobs:
        path: ${{env.SOLUTION_FILE_PATH}}
 
     - name: test
-      run: .\Release\WindowsProject2.exe
+      run: .\x64\Release\WindowsProject2.exe
