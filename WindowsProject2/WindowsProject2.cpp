@@ -41,13 +41,13 @@ bool bResult;
         printf("errSend  errcode:%d\n",GetLastError());
     }
     //获得HTTP Response Header信息
-    char *szBuff[1024];
+    char szBuff[1024];
     //DWORD dwReadSize = 2048;
     bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[1023] = '/0';
+    szBuff[1023] = '\0';
     printf("%s/n", szBuff);
     //HTTP Response 的 Body
     DWORD dwBytesAvailable;
@@ -67,7 +67,7 @@ bool bResult;
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[1023] = '/0';
+    szBuff[1023] = '\0';
     printf("%s/n", szBuff);
 
     DWORD statusCode;
