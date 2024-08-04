@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 int main() {
+bool bResult;
     char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web";
     char data[] = "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt1&parentFileId=0&size=0&type=0";
 
@@ -33,7 +34,7 @@ int main() {
     InternetQueryOptionA (hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, NULL);
     dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
     InternetSetOption (hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof (dwFlags) );
-    bool bResult = HttpSendRequestA(hRequest, headers, sizeof(headers), data, sizeof(data));
+    bResult = HttpSendRequestA(hRequest, headers, sizeof(headers), data, sizeof(data));
     if ( bResult ||GetLastError() != ERROR_INTERNET_INVALID_CA )
     {
         printf("errSend  errcode:%d\n",GetLastError());
