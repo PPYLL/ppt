@@ -1,7 +1,8 @@
 ﻿#include <windows.h>
 #include <wininet.h>
 #include <stdio.h>
-
+#pragma comment(lib,"wininet.lib")   
+//#define TRANSFER_SIZE    1024
 int main() {
 bool bResult;
     char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web";
@@ -40,13 +41,13 @@ bool bResult;
         printf("errSend  errcode:%d\n",GetLastError());
     }
     //获得HTTP Response Header信息
-    char szBuff[2048];
+    char *szBuff[1024];
     //DWORD dwReadSize = 2048;
     bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[2047] = '/0';
+    szBuff[1023] = '/0';
     printf("%s/n", szBuff);
     //HTTP Response 的 Body
     DWORD dwBytesAvailable;
@@ -66,7 +67,7 @@ bool bResult;
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[2047] = '/0';
+    szBuff[1023] = '/0';
     printf("%s/n", szBuff);
 
     DWORD statusCode;
