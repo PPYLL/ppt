@@ -5,6 +5,10 @@
 #define TRANSFER_SIZE    1024
 int main() {
     bool bResult;
+DWORD statusCode=0;
+DWORD dwBytesAvailable;
+DWORD dwBytesRead;
+
     char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web\r\n\r\n";
 
 
@@ -58,7 +62,7 @@ int main() {
     }
 
 
-    DWORD statusCode=0;
+   
     HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE , &statusCode, NULL, NULL);
     printf("Status Code: %lu\n", statusCode);
     //获得HTTP Response Header信息
@@ -72,7 +76,7 @@ int main() {
     szBuff[TRANSFER_SIZE] = '\0';
     printf("%s\n", szBuff);
     //HTTP Response 的 Body
-    DWORD dwBytesAvailable;
+   
     bResult = InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0);
     if( ! bResult ) {
         printf("errQueryDataAvailable code:%d\n",GetLastError());
@@ -85,7 +89,7 @@ int main() {
         goto GOTO_EXIT;
     }
 
-    DWORD dwBytesRead;
+    
     bResult = InternetReadFile(hRequest, szBuff, dwBytesAvailable, &dwBytesRead);
     if( ! bResult ) {
         printf("errGetBody code:%d\n",GetLastError());
