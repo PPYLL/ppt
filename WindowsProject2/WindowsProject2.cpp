@@ -55,7 +55,7 @@ DWORD dwBytesRead;
         InternetSetOption (hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof (dwFlags) );
     */
     bResult = HttpSendRequestA(hRequest, headers, -1L, data, -1L);
-    if ( !bResult )
+    if ( !bResult ||GetLastError()!=0)
     {
         printf("errSend  errcode:%d\n",GetLastError());
         goto GOTO_EXIT;
