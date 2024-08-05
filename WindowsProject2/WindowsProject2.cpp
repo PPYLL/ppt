@@ -55,15 +55,15 @@ int main() {
 
     DWORD statusCode;
     HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, NULL, NULL);
-    printf("Status Code: %lu\n", statusCode);
+    printf("Status Code: %d\n", statusCode);
     //获得HTTP Response Header信息
-    char szBuff[1024];
+    char szBuff[TRANSFER_SIZE];
     //DWORD dwReadSize = 2048;
     bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[1025] = '\0';
+    szBuff[TRANSFER_SIZE] = '\0';
     printf("%s\n", szBuff);
     //HTTP Response 的 Body
     DWORD dwBytesAvailable;
@@ -83,7 +83,7 @@ int main() {
     if( ! bResult ) {
         goto GOTO_EXIT;
     }
-    szBuff[1025] = '\0';
+    szBuff[TRANSFER_SIZE] = '\0';
     printf("%s\n", szBuff);
 
 
