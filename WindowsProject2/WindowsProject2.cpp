@@ -48,19 +48,20 @@ int main() {
     bResult = HttpSendRequestA(hRequest, headers, -1L, data, -1L);
     if ( !bResult )
     {
-        printf("errSend  errcode:%d\n",GetLastError());
+        printf("errSend  errcode:%lu\n",GetLastError());
         goto GOTO_EXIT;
     }
 
 
     DWORD statusCode;
-    HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE | HTTP_QUERY_FLAG_NUMBER, &statusCode, NULL, NULL);
+    HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE , &statusCode, NULL, NULL);
     printf("Status Code: %d\n", statusCode);
     //获得HTTP Response Header信息
     char szBuff[TRANSFER_SIZE];
     //DWORD dwReadSize = 2048;
     bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
+        printf("errGetheaders code:%d\n",GetLastError());
         goto GOTO_EXIT;
     }
     szBuff[TRANSFER_SIZE] = '\0';
@@ -69,6 +70,7 @@ int main() {
     DWORD dwBytesAvailable;
     bResult = InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0);
     if( ! bResult ) {
+        printf("errQueryDataAvailable code:%d\n",GetLastError());
         goto GOTO_EXIT;
     }
 
@@ -81,6 +83,7 @@ int main() {
     DWORD dwBytesRead;
     bResult = InternetReadFile(hRequest, szBuff, dwBytesAvailable, &dwBytesRead);
     if( ! bResult ) {
+        printf("errGetBody code:%d\n",GetLastError());
         goto GOTO_EXIT;
     }
     szBuff[TRANSFER_SIZE] = '\0';
