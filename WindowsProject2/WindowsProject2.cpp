@@ -63,7 +63,12 @@ DWORD dwBytesRead;
 
 
    
-    HttpQueryInfoA(hConnect, HTTP_QUERY_STATUS_CODE , &statusCode, NULL, NULL);
+    HttpQueryInfoA(hConnect, HTTP_QUERY_VERSION , &statusCode, NULL, NULL);
+if( ! bResult ) {
+        printf("errGetStatusCode code:%d\n",GetLastError());
+        goto GOTO_EXIT;
+    }
+
     printf("Status Code: %lu\n", statusCode);
     //获得HTTP Response Header信息
     char szBuff[TRANSFER_SIZE];
