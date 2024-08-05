@@ -25,6 +25,7 @@ char szBuff[TRANSFER_SIZE];
     HINTERNET hConnect = InternetConnectA(hInternet,
                                           "www.123pan.com", INTERNET_DEFAULT_HTTPS_PORT,NULL, NULL,   INTERNET_SERVICE_HTTP, 0, 0);
     if( ! hConnect ) {
+        printf("errConnect code:%d\n",GetLastError());
         return 1;
     }
 
