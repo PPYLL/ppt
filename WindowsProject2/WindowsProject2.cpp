@@ -73,7 +73,7 @@ if( ! bResult ) {
     //获得HTTP Response Header信息
     char szBuff[TRANSFER_SIZE];
     //DWORD dwReadSize = 2048;
-    bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
+    bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_VARY, szBuff, NULL, NULL);
     if( ! bResult ) {
         printf("errGetheaders code:%d\n",GetLastError());
         goto GOTO_EXIT;
