@@ -2,7 +2,7 @@
 #include <wininet.h>
 #include <stdio.h>
 #pragma comment(lib,"wininet.lib")
-//#define TRANSFER_SIZE    1024
+#define TRANSFER_SIZE    1024
 int main() {
     bool bResult;
     char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web\r\n\0";
