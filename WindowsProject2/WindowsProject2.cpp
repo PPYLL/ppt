@@ -5,11 +5,16 @@
 #define TRANSFER_SIZE    1024
 int main() {
     bool bResult;
-    char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web\r\n\0";
+    char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web\r\n";
 
 
 
     char data[] = "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt1&parentFileId=0&size=0&type=0";
+
+    printf(headers);
+    printf("\n\n");
+    printf(data);
+    printf("\n\n");
 
     HINTERNET hInternet = InternetOpenA("Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
