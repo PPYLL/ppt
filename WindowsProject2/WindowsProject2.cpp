@@ -8,7 +8,7 @@ int main() {
 DWORD statusCode=0;
 DWORD dwBytesAvailable;
 DWORD dwBytesRead;
-
+char szBuff[TRANSFER_SIZE];
     char headers[] = "Content-Type: application/x-www-form-urlencoded\r\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M\r\nApp-Version: 3\r\nplatform: web\r\n\r\n";
 
 
@@ -72,7 +72,7 @@ if( ! bResult ) {
     printf("Status Code: %lu\n", statusCode);
 /*
     //获得HTTP Response Header信息
-    char szBuff[TRANSFER_SIZE];
+    
     //DWORD dwReadSize = 2048;
     bResult = HttpQueryInfoA(hRequest, HTTP_QUERY_FLAG_NUMBER |HTTP_QUERY_RAW_HEADERS_CRLF, szBuff, NULL, NULL);
     if( ! bResult ) {
