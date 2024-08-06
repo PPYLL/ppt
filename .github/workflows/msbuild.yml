@@ -25,8 +25,18 @@ jobs:
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
-      
-   
+
+    - name: use-vcpkg
+      run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          vcpkg install curl[openssl]:x64-windows-static
+          vcpkg integrate install
+    - name: upload__artifact
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+       path: D:/a/cbuild/cbuild/vcpkg/packages/curl_x64-windows-static
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
@@ -36,8 +46,8 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: msbuild /m /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}}  #x64
-      
-    - name: upload__artifact
+
+    - name: upload__artifact2
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
       with:
        path: .\x64\Release
