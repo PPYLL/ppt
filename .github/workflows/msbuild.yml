@@ -25,23 +25,12 @@ jobs:
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
-
+      
+   
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-      
-    - name: use-vcpkg
-      run: |
-          git clone https://github.com/Microsoft/vcpkg.git
-          cd vcpkg
-          ./bootstrap-vcpkg.sh
-          vcpkg integrate install
-          vcpkg install curl[openssl]:x64-windows
-    - name: upload__artifact
-      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-      with:
-       path: D:/a/cbuild/cbuild/vcpkg/packages
-       
+
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
@@ -51,7 +40,7 @@ jobs:
     - name: upload__artifact
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
       with:
-       path: ${{env.SOLUTION_FILE_PATH}}
+       path: .\x64\Release
 
     - name: test
       run: .\x64\Release\WindowsProject2.exe
