@@ -154,7 +154,7 @@
             <EnableCOMDATFolding>true</EnableCOMDATFolding>
             <OptimizeReferences>true</OptimizeReferences>
             <GenerateDebugInformation>true</GenerateDebugInformation>
-            <ImportLibrary>libcurl.lib</ImportLibrary>
+            <AdditionalLibraryDirectories>libcurl.lib</AdditionalLibraryDirectories>
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
