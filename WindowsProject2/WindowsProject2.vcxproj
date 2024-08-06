@@ -154,15 +154,13 @@
             <EnableCOMDATFolding>true</EnableCOMDATFolding>
             <OptimizeReferences>true</OptimizeReferences>
             <GenerateDebugInformation>true</GenerateDebugInformation>
-            <AdditionalLibraryDirectories>$(SolutionDir)WindowsProject2\</AdditionalLibraryDirectories>
-            <AdditionalDependencies>libcurl.lib</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
         <ClCompile Include="WindowsProject2.cpp" />
     </ItemGroup>
     <ItemGroup>
-        <ClInclude Include="libcurl.lib" />
+        <Library Include="libcurl.lib" />
     </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
     <ImportGroup Label="ExtensionTargets">
