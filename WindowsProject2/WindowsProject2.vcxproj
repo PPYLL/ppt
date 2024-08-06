@@ -154,7 +154,7 @@
             <EnableCOMDATFolding>true</EnableCOMDATFolding>
             <OptimizeReferences>true</OptimizeReferences>
             <GenerateDebugInformation>true</GenerateDebugInformation>
-            <AdditionalLibraryDirectories>$(SolutionDir)</AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories>$(SolutionDir)WindowsProject2</AdditionalLibraryDirectories>
             <AdditionalDependencies>libcurl.lib</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
