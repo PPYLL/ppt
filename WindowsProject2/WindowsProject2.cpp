@@ -1,6 +1,6 @@
 ﻿#include <windows.h>
-#include "curl/curl.h"
 #include <stdio.h>
+#include "curl/curl.h"
 #pragma comment (lib,"libcurl.lib")
 int main() {
     CURL *hnd = curl_easy_init();
