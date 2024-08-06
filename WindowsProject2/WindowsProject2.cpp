@@ -1,5 +1,5 @@
 ﻿#include <windows.h>
-#include "curl.h"
+#include "curl/curl.h"
 #include <stdio.h>
 #pragma comment (lib,"libcurl.lib")
 int main() {
