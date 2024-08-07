@@ -36,7 +36,7 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: msbuild /m /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}}  #x64
 
-    - name: upload__artifact2
+    - name: upload__artifact
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
       with:
        path: .
@@ -44,5 +44,5 @@ jobs:
     - name: test
       run: |
            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/x500x/cbuild/main/WindowsProject2/libcurl.dll" -OutFile ".\x64\Release\libcurl.dll"
-           Get-ChildItem .\x64
+           Get-ChildItem .\x64\Release
            .\x64\Release\WindowsProject2.exe
