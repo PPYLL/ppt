@@ -1,7 +1,7 @@
 ﻿#include <windows.h>
 #include <stdio.h>
 #include "curl/curl.h"
-
+#pragma comment (lib,"libcurl.lib")
 
 
 int main() {
