@@ -7,6 +7,8 @@
 int main() {
     printf("started\n");
     CURL *hnd = curl_easy_init();
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
 
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
