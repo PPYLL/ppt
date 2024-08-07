@@ -26,8 +26,8 @@ int main() {
 
     CURLcode ret = curl_easy_perform(hnd);
     printf("code %d\n",ret);
-    if(!ret){
+    //if(!ret){
         printf(curl_easy_strerror(ret));
-    }
+   // }
     printf("ended\n");
 }
