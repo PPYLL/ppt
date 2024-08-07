@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include "curl/curl.h"
 #pragma comment (lib,"libcurl.lib")
+#define _CRT_SECURE_NO_WARNINGS 1
+# pragma warning(disable:4996)
 
-bool getUrl(char *filename)//GET请求
+bool getUrl(const char *filename)//GET请求
 {
         CURL *curl;
         CURLcode res;
@@ -34,6 +36,7 @@ bool getUrl(char *filename)//GET请求
                 return true;
         }
 }
+/*
 bool postUrl(char *filename)//POST请求
 {
         CURL *curl;
@@ -55,9 +58,9 @@ bool postUrl(char *filename)//POST请求
         fclose(fp);
         return true;
 }
-
+*/
 int main()
 {
         getUrl("c:\\codee\\get.html");
-        postUrl("c:\\codee\\post.html");
+        //postUrl("c:\\codee\\post.html");
 }
