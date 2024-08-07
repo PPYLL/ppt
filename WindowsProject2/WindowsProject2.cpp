@@ -25,5 +25,9 @@ int main() {
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt111112&parentFileId=0&size=0&type=0");
 
     CURLcode ret = curl_easy_perform(hnd);
+    printf("code %d\n",ret);
+    if(!ret){
+        printf(curl_easy_strerror(ret));
+    }
     printf("ended\n");
 }
