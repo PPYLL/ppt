@@ -19,7 +19,7 @@ struct curl_slist * SetNormalHeaders(){
 
 size_t writeCallback(char *b, size_t size, size_t nitems, void *p)
 {
-    CopyMemory(str+item,b,nitems);
+    CopyMemory(p+item,b,nitems);
     item=1+item+nitems;
     return nitems;
 }
@@ -31,15 +31,15 @@ int main() {
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
 
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, NULL);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)str);
 
 
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
 
     
-    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
 
     curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt112&parentFileId=0&size=0&type=0");
 
