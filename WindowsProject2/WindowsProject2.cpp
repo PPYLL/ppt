@@ -19,7 +19,8 @@ struct curl_slist * SetNormalHeaders(){
 
 size_t writeCallback(char *b, size_t size, size_t nitems, void *p)
 {
-    CopyMemory(p+item,b,nitems);
+    char *str=(char *)p;
+    CopyMemory(str+item,b,nitems);
     item=1+item+nitems;
     return nitems;
 }
@@ -47,7 +48,7 @@ int main() {
     printf("code %d\n",ret);
     if(0!=ret){
         printf("err:%s\n",curl_easy_strerror(ret));
-        curl_easy_cleanup(curl);
+        curl_easy_cleanup(hnd);
         ExitProcess(1);
    }
     printf("respose:\n");
