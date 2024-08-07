@@ -43,5 +43,5 @@ jobs:
 
     - name: test
       run: |
-           Copy-Item -Path .\x64\Release -Destination .
+           Copy-Item -Path .\x64\Release -Destination .\WindowsProject2
            .\WindowsProject2\WindowsProject2.exe
