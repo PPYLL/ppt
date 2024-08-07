@@ -36,12 +36,12 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference 
       run: msbuild /m /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}}  #x64
 
-    - name: upload__artifact
-      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-      with:
-       path: .
+#    - name: upload__artifact
+#      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+#      with:
+#       path: .
 
     - name: test
       run: |
            Copy-Item -Path .\x64\Release -Destination .
-           .\WindowsProject2.exe
+           .\WindowsProject2\WindowsProject2.exe
