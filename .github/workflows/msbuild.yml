@@ -44,4 +44,5 @@ jobs:
     - name: test
       run: |
            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/x500x/cbuild/main/WindowsProject2/libcurl.dll" -OutFile ".\x64\Release\libcurl.dll"
+           Get-ChildItem .\x64
            .\x64\Release\WindowsProject2.exe
