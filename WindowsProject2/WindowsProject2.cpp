@@ -54,7 +54,7 @@ char *GetFileName(char *filepath) {
     }
 }
 
-
+/*
 void PreUpload(CURL *hnd,char *FilePath) {
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
@@ -80,11 +80,32 @@ void PreUpload(CURL *hnd,char *FilePath) {
     printf("\ndata:%s\n\n",datastr);
     
 }
-
+*/
 int main() {
     printf("started\n");
     char FilePath[]=".\\WindowsProject2\\2.json";
-    
+    HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
+                             0,//可共享读
+                             NULL, OPEN_ALWAYS,//打开已经存在的文件
+                             FILE_ATTRIBUTE_NORMAL,NULL);
+    if(hFile==INVALID_HANDLE_VALUE) {
+        printf("打开文件失败:%d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        ExitProcess(2);
+    }
+    LARGE_INTEGER lpFileSize;
+    if(0==GetFileSizeEx(hFile, &lpFileSize)) {
+        printf("获取文件大小失败： %d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        ExitProcess(3);
+    }
+    printf("filesize:%lld\n",lpFileSize.QuadPart);
+    char *filestr=(char *)malloc(lpFileSize.QuadPart);
+    ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
+    printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
+    char *datastr=(char *)malloc(1024*2);
+    sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
+    printf("\ndata:%s\n\n",datastr);
     cJSON *str_json= cJSON_Parse(filestr);
     if (!str_json)
     {
