@@ -5,6 +5,7 @@
 #include "md5/md5.h"
 #pragma comment (lib,"libcurl.lib")
 
+size_t item=0;
 char * md5_hash(char * md5_string,int size)
 {
   int status = 0;
@@ -52,15 +53,9 @@ char *GetFileName(char *filepath) {
         }
     }
 }
-/*
+
 
 void PreUpload(CURL *hnd,char *FilePath) {
-    
-}
-*/
-int main() {
-    printf("started\n");
-    char FilePath[]=".\\WindowsProject2\\2.json";
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
@@ -83,6 +78,13 @@ int main() {
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
+    
+}
+
+int main() {
+    printf("started\n");
+    char FilePath[]=".\\WindowsProject2\\2.json";
+    
     cJSON *str_json= cJSON_Parse(filestr);
     if (!str_json)
     {
