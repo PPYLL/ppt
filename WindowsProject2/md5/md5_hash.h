@@ -1,1 +1,1 @@
-extern char* md5_hash(char *,int );
+char* md5_hash(char *,int );
