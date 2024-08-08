@@ -7,7 +7,7 @@
 //禁用安全警告
 #define _CRT_SECURE_NO_WARNINGS 1
 # pragma warning(disable:4996)
-
+# pragma warning(disable:2664)
 size_t item=0;
 
 struct curl_slist * SetNormalHeaders() {
@@ -51,7 +51,7 @@ int PreUpload(CURL *hnd,char *FilePath) {
         printf("filepath:%s\n",FilePath);
         ExitProcess(2);
     }
-    LARGE_INTEGER lpFileSize=NULL;
+    LARGE_INTEGER lpFileSize;
     if(0==GetFileSizeEx(hFile, &lpFileSize)) {
         printf("获取文件大小失败： %d\n",GetLastError());
         printf("filepath:%s\n",FilePath);
