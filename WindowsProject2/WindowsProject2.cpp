@@ -119,9 +119,8 @@ void PreUpload(CURL *hnd,char *FilePath) {
         ExitProcess(4);
     }
     printf("%p\n",cJSON_GetObjectItem(data, "Reuse"));
-/*
     printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
-*/
+
 /*
     printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
     printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
