@@ -32,7 +32,7 @@ char * md5_hash(char * md5_string,int size)
 
 	md5_state_t state;
 	md5_byte_t digest[16];
-	char* hex_output = malloc(16*2 + 1);
+	char* hex_output [16*2 + 1];
 	int di;
 
 	md5_init(&state);
@@ -40,7 +40,7 @@ char * md5_hash(char * md5_string,int size)
 	md5_finish(&state, digest);
 
 	for (di = 0; di < 16; ++di)
-	    sprintf(hex_output + di * 2, "%02x", digest[di]);
-
+	    sprintf_s(hex_output + di * 2,sizeof(hex_output), "%02x", digest[di]);
+    
     return hex_output;
 }
