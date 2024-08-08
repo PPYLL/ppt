@@ -104,7 +104,9 @@ int main() {
     printf("filesize:%lld\n",lpFileSize.QuadPart);
     char *filestr=(char *)malloc(lpFileSize.QuadPart);
     ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
+    
     printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
+    printf(filestr);
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
