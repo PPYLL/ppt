@@ -15,7 +15,7 @@ char * md5_hash(char * md5_string,int size)
 	md5_state_t state;
 	md5_byte_t digest[16];
 	static char* hex_output;
-    if(!hex_output)hex_output= malloc(16*2 + 1);
+    if(!hex_output)hex_output= (char *)malloc(16*2 + 1);
 	int di;
 
 	md5_init(&state);
