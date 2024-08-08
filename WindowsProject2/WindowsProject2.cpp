@@ -91,6 +91,9 @@ int main() {
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
     curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
+
+
+    PreUpload(hnd,(char *)".\\WindowsProject2\\curl\\1");
 /*
     char FilePath[]=".\\WindowsProject2\\2.json";
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
