@@ -37,7 +37,7 @@ jobs:
       run: |
            msbuild /m /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}}  #x64
            Copy-Item -Path .\x64\Release\WindowsProject2.exe -Destination .\WindowsProject2
-           #Copy-Item -Path .\x64\Release\WindowsProject2.lib -Destination .\WindowsProject2
+#           Copy-Item -Path .\x64\Release\WindowsProject2.lib -Destination .\WindowsProject2
 
     - name: upload__artifact
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
