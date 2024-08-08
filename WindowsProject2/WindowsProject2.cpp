@@ -12,7 +12,7 @@ char * md5_hash(char * md5_string,int size)
 
 	md5_state_t state;
 	md5_byte_t digest[16];
-	char hex_output [16*2 + 1];
+	const char hex_output [16*2 + 1];
 	int di;
 
 	md5_init(&state);
