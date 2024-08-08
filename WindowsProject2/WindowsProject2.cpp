@@ -27,6 +27,7 @@ char * md5_hash(char * md5_string,int size)
 
 int main() {
     printf("started\n");
+    char FilePath[]=".\\WindowsProject2\\curl\\1";
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
@@ -42,9 +43,10 @@ int main() {
         printf("filepath:%s\n",FilePath);
         ExitProcess(3);
     }
+    printf("filesize:%lld\n",lpFileSize.QuadPart);
     char *filestr=(char *)malloc(lpFileSize.QuadPart);
     ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
-    printf("md5:%s\n",);
+    printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
     /*
     CURL *hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
