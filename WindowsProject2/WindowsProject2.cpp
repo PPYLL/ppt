@@ -132,7 +132,7 @@ int PreUpload(CURL *hnd,char *FilePath) {
 
 
 int main() {
-
+    printf("start\n\n");
     CURL *hnd= curl_easy_init();
     //重要!禁用ssl证书检查
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
