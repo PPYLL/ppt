@@ -81,6 +81,22 @@ void PreUpload(CURL *hnd,char *FilePath) {
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
+
+    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS,datastr);
+    char *respondstr=(char *)malloc(1024*1024);
+    curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)respondstr);
+    CURLcode ret = curl_easy_perform(hnd);
+    if(0!=ret) {
+        printf("code %d\n",ret);
+        printf("err:%s\n",curl_easy_strerror(ret));
+        curl_easy_cleanup(hnd);
+        ExitProcess(5);
+    }
+    printf("respose:\n");
+    printf(respondstr);
     
 }
 
