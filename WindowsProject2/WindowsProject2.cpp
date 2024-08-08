@@ -5,9 +5,47 @@
 #include "md5/md5.h"
 #pragma comment (lib,"libcurl.lib")
 
+char * md5_hash(char * md5_string,int size)
+{
+  int status = 0;
+
+	md5_state_t state;
+	md5_byte_t digest[16];
+	char hex_output [16*2 + 1];
+	int di;
+
+	md5_init(&state);
+	md5_append(&state, (const md5_byte_t *)md5_string, size);
+	md5_finish(&state, digest);
+
+	for (di = 0; di < 16; ++di)
+	    sprintf_s(hex_output + di * 2,sizeof(hex_output), "%02x", digest[di]);
+    
+    return hex_output;
+}
+
 
 int main() {
     printf("started\n");
+    HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
+                             0,//可共享读
+                             NULL, OPEN_ALWAYS,//打开已经存在的文件
+                             FILE_ATTRIBUTE_NORMAL,NULL);
+    if(hFile==INVALID_HANDLE_VALUE) {
+        printf("打开文件失败:%d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        ExitProcess(2);
+    }
+    LARGE_INTEGER lpFileSize;
+    if(0==GetFileSizeEx(hFile, &lpFileSize)) {
+        printf("获取文件大小失败： %d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        ExitProcess(3);
+    }
+    char *filestr=(char *)malloc(lpFileSize.QuadPart);
+    ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
+    printf("md5:%s\n",);
+    /*
     CURL *hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
@@ -22,7 +60,7 @@ int main() {
     headers = curl_slist_append(headers, "App-Version: 3");
     headers = curl_slist_append(headers, "platform: web");
     headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
-    headers = curl_slist_append(headers, "Accept: */*");
+
     headers = curl_slist_append(headers, "Origin: https://www.123pan.com");
     curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
 
@@ -33,5 +71,6 @@ int main() {
     //if(!ret){
         printf(curl_easy_strerror(ret));
    // }
+*/
     printf("ended\n");
 }
