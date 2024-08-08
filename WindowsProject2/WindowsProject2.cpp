@@ -118,6 +118,7 @@ void PreUpload(CURL *hnd,char *FilePath) {
         cJSON_Delete(data);
         ExitProcess(4);
     }
+    printf("%p\n",cJSON_GetObjectItem(data, "Reuse"));
 /*
     printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
 */
