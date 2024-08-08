@@ -60,7 +60,7 @@ int PreUpload(CURL *hnd,char *FilePath) {
     char *filestr=(char *)malloc(lpFileSize.QuadPart);
     ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
     char *datastr=(char *)malloc(1024*2);
-    sprintf(datastr, "driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%d&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
+    sprintf(datastr, "driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
     curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
