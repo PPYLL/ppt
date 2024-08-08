@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <stdio.h>
 #include "curl/curl.h"
 #include "cjson/cJSON.h"
@@ -47,14 +47,14 @@ int PreUpload(CURL *hnd,char *FilePath) {
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
                              FILE_ATTRIBUTE_NORMAL,NULL);
     if(hFile==INVALID_HANDLE_VALUE) {
-        printf("打开文件失败： %d\n",GetLastError());
-        printf("filepath:%s\n",filepath);
-        Exitprocess(2);
+        printf("打开文件失败:%d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        ExitProcess(2);
     }
-    PLARGE_INTEGER lpFileSize=NULL;
+    LARGE_INTEGER lpFileSize=NULL;
     if(0==GetFileSizeEx(hFile, &lpFileSize)) {
         printf("获取文件大小失败： %d\n",GetLastError());
-        printf("filepath:%s\n",filepath);
+        printf("filepath:%s\n",FilePath);
         ExitProcess(3);
     }
     char *filestr=(char *)malloc(lpFileSize.QuadPart);
@@ -81,15 +81,14 @@ int PreUpload(CURL *hnd,char *FilePath) {
     cJSON *str_json= cJSON_Parse(respondstr);
     if (!str_json)
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr()); //输出json格式错误信息
-
+        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
         cJSON_Delete(str_json);//释放内存
         ExitProcess(4);
     }
     cJSON *data=cJSON_GetObjectItem(str_json, "data");
     if (!data)
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr()); //输出json格式错误信息
+        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
         cJSON_Delete(str_json);
         cJSON_Delete(data);
         ExitProcess(4);
@@ -119,7 +118,7 @@ int main() {
     curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
 
     //curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt112&parentFileId=0&size=0&type=0");
-    PreUpload(hnd,".\\WindowsProject2\\curl\\1")
+    PreUpload(hnd,".\\WindowsProject2\\curl\\1");
 
     return 0;
 }
