@@ -1,4 +1,3 @@
-﻿#define _CRT_SECURE_NO_WARNINGS 1
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,8 +5,7 @@
 #include "cjson/cJSON.h"
 #include "md5/md5.h"
 #pragma comment (lib,"libcurl.lib")
-//禁用安全警告
-# pragma warning(disable:4996)
+
 size_t item=0;
 
 
