@@ -24,7 +24,40 @@ char * md5_hash(char * md5_string,int size)
     return hex_output;
 }
 
+struct curl_slist * SetNormalHeaders() {
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36");
+    headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M");
+    headers = curl_slist_append(headers, "App-Version: 3");
+    headers = curl_slist_append(headers, "platform: web");
+    headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+    return headers;
+}
 
+size_t writeCallback(char *b, size_t size, size_t nitems, void *p)
+{
+    char *str=(char *)p;
+    CopyMemory(str+item,b,nitems);
+    item=1+item+nitems;
+    *(str+item)='\0';
+    return nitems;
+}
+
+char *GetFileName(char *filepath) {
+    int len=strlen(filepath);
+    for(int i = len; i > 0; i--) {
+        if('\\'==*(filepath+i))
+        {
+            return filepath+i+1;
+        }
+    }
+}
+/*
+
+void PreUpload(CURL *hnd,char *FilePath) {
+    
+}
+*/
 int main() {
     printf("started\n");
     char FilePath[]=".\\WindowsProject2\\2.json";
