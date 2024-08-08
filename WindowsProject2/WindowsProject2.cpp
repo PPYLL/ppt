@@ -118,11 +118,13 @@ void PreUpload(CURL *hnd,char *FilePath) {
         ExitProcess(4);
     }
     printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
+/*
     printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
     printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
     printf("UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
     printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
     printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
+*/
     cJSON_Delete(str_json);
     cJSON_Delete(data);
     // free(str);
