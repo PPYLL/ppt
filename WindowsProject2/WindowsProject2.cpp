@@ -118,7 +118,7 @@ int main() {
     curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
 
     //curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt112&parentFileId=0&size=0&type=0");
-    PreUpload(hnd,".\\WindowsProject2\\curl\\1");
+    PreUpload(hnd,(char *)".\\WindowsProject2\\curl\\1");
 
     return 0;
 }
