@@ -162,8 +162,6 @@
         <ClCompile Include="cjson\cJSON.h" />
         <ClCompile Include="cjson\cJSON_Utils.c" />
         <ClCompile Include="cjson\cJSON_Utils.h" />
-        <ClCompile Include="md5\md5_hash.c" />
-        <ClCompile Include="md5\md5_hash.h" />
         <ClCompile Include="md5\md5.c" />
         <ClCompile Include="md5\md5.h" />
     </ItemGroup>

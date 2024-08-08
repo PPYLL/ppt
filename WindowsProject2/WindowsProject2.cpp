@@ -1,14 +1,36 @@
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "curl/curl.h"
 #include "cjson/cJSON.h"
-#include "md5/md5_hash.h"
+#include "md5/md5.h"
 #pragma comment (lib,"libcurl.lib")
 //禁用安全警告
 #define _CRT_SECURE_NO_WARNINGS 1
 # pragma warning(disable:4996)
 # pragma warning(disable:2664)
 size_t item=0;
+
+
+char * md5_hash(char * md5_string,int size)
+{
+  int status = 0;
+
+	md5_state_t state;
+	md5_byte_t digest[16];
+	char hex_output [16*2 + 1];
+	int di;
+
+	md5_init(&state);
+	md5_append(&state, (const md5_byte_t *)md5_string, size);
+	md5_finish(&state, digest);
+
+	for (di = 0; di < 16; ++di)
+	    sprintf_s(hex_output + di * 2,sizeof(hex_output), "%02x", digest[di]);
+    
+    return hex_output;
+}
+
 
 struct curl_slist * SetNormalHeaders() {
     struct curl_slist *headers = NULL;
