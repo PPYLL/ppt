@@ -1,1 +1,1 @@
-char* md5_hash(char *,int );
+char* md5_hash(char * md5_string,int size);
