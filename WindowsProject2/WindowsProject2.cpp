@@ -47,7 +47,9 @@ int main() {
     char *filestr=(char *)malloc(lpFileSize.QuadPart);
     ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
     printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
-
+    char *datastr=(char *)malloc(1024*2);
+    sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
+    printf("\ndata:%s\n\n",datastr);
     cJSON *str_json= cJSON_Parse(filestr);
     if (!str_json)
     {
