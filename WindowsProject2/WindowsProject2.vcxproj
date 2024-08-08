@@ -158,6 +158,8 @@
     </ItemDefinitionGroup>
     <ItemGroup>
         <ClCompile Include="WindowsProject2.cpp" />
+        <ClCompile Include="cjson\cJSON.h" />
+        <ClCompile Include="md5\md5_hash.h" />
     </ItemGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
     <ImportGroup Label="ExtensionTargets">
