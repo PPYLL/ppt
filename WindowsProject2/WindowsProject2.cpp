@@ -95,9 +95,40 @@ void PreUpload(CURL *hnd,char *FilePath) {
         curl_easy_cleanup(hnd);
         ExitProcess(5);
     }
-    printf("respose:\n");
-    printf(respondstr);
     
+    
+    cJSON *str_json= cJSON_Parse(respondstr);
+    if (!str_json)
+    {
+        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        cJSON_Delete(str_json);//释放内存
+        ExitProcess(4);
+    }
+    if(0!=cJSON_GetObjectItem(str_json, "code")->valueint){
+        printf("respose:\n");
+        printf(respondstr);
+        ExitProcess(6);
+    }
+    cJSON *data=cJSON_GetObjectItem(str_json, "data");
+    if (!data)
+    {
+        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        cJSON_Delete(str_json);
+        cJSON_Delete(data);
+        ExitProcess(4);
+    }
+    printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
+    printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
+    printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
+    printf("UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
+    printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
+    printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
+    cJSON_Delete(str_json);
+    cJSON_Delete(data);
+    // free(str);
+    free(respondstr);
+    free(filestr);
+    free(datastr);
 }
 
 int main() {
