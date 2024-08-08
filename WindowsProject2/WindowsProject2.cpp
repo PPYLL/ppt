@@ -104,7 +104,7 @@ void PreUpload(CURL *hnd,char *FilePath) {
         cJSON_Delete(str_json);//释放内存
         ExitProcess(4);
     }
-/*
+
     if(0!=cJSON_GetObjectItem(str_json, "code")->valueint){
         printf("respose:\n");
         printf(respondstr);
@@ -118,6 +118,7 @@ void PreUpload(CURL *hnd,char *FilePath) {
         cJSON_Delete(data);
         ExitProcess(4);
     }
+/*
     printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
 */
 /*
