@@ -128,7 +128,7 @@ void PreUpload(CURL *hnd,char *FilePath) {
     printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
 */
     cJSON_Delete(str_json);
-    cJSON_Delete(data);
+   // cJSON_Delete(data);
     // free(str);
     free(respondstr);
     free(filestr);
