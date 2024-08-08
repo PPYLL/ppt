@@ -14,7 +14,8 @@ char * md5_hash(char * md5_string,int size)
 
 	md5_state_t state;
 	md5_byte_t digest[16];
-	char* hex_output = (char *)malloc(16*2 + 1);
+	static char* hex_output;
+    if(!hex_output)hex_output= malloc(16*2 + 1);
 	int di;
 
 	md5_init(&state);
@@ -28,7 +29,7 @@ char * md5_hash(char * md5_string,int size)
 }
 
 struct curl_slist * SetNormalHeaders() {
-    struct curl_slist *headers = NULL;
+    static struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36");
     headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M");
     headers = curl_slist_append(headers, "App-Version: 3");
@@ -56,7 +57,7 @@ char *GetFileName(char *filepath) {
     }
 }
 
-/*
+
 void PreUpload(CURL *hnd,char *FilePath) {
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
@@ -82,9 +83,15 @@ void PreUpload(CURL *hnd,char *FilePath) {
     printf("\ndata:%s\n\n",datastr);
     
 }
-*/
+
 int main() {
     printf("started\n");
+    CURL *hnd= curl_easy_init();
+    //重要!禁用ssl证书检查
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
+/*
     char FilePath[]=".\\WindowsProject2\\2.json";
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
@@ -106,10 +113,13 @@ int main() {
     ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
     
     printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
-    printf(filestr);
+   // printf(filestr);
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
+    
+
+
     cJSON *str_json= cJSON_Parse(filestr);
     if (!str_json)
     {
@@ -130,7 +140,7 @@ int main() {
     cJSON_Delete(str_json);//释放内存
 
 
-
+*/
     /*
     CURL *hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
