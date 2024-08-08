@@ -1,4 +1,6 @@
-﻿#include <windows.h>
+﻿#define _CRT_SECURE_NO_WARNINGS 1 //要放在第一行
+# pragma warning(disable:4996)
+#include <windows.h>
 #include <stdio.h>
 #include "curl/curl.h"
 #include "cjson/cJSON.h"
@@ -20,7 +22,7 @@ char * md5_hash(char * md5_string,int size)
 	md5_finish(&state, digest);
 
 	for (di = 0; di < 16; ++di)
-	    sprintf_s(hex_output + di * 2,sizeof(hex_output), "%02x", digest[di]);
+	    sprintf(hex_output + di * 2, "%02x", digest[di]);
     
     return hex_output;
 }
