@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS 1 //要放在第一行
+#define _CRT_SECURE_NO_WARNINGS 1 //要放在第一行
 # pragma warning(disable:4996)
 #include <windows.h>
 #include <stdio.h>
@@ -7,45 +7,106 @@
 #include "md5/md5.h"
 #pragma comment (lib,"libcurl.lib")
 
-size_t item=0;
+char *memstr;//文件分片内容存放
+
+#define MAXRESPNSESIZE 1024*1024
+#define MEMSIZE 32*1024*1024
+
+struct FILEDATA {
+    char *filename;
+    char *filepath;
+    LARGE_INTEGER filesize;
+};
+
+struct UPLOADDATA {
+    cJSON *data;
+    char *Key;
+    char *Bucket;
+    char *UploadId;
+    char *StorageNode;
+    int SliceSize;
+    int FileId;
+    int isMultipart;
+    struct FILEDATA FileData;
+    //char *md5;//临时使用，为分片文件md5
+};
+
+
+struct RESPONSE {
+    char *str;
+    size_t maxsize;
+    size_t nowsize;
+};
+
+
 char * md5_hash(char * md5_string,int size)
 {
-  int status = 0;
+    int status = 0;
 
-	md5_state_t state;
-	md5_byte_t digest[16];
-	static char* hex_output;
+    md5_state_t state;
+    md5_byte_t digest[16];
+    static char* hex_output;
     if(!hex_output)hex_output= (char *)malloc(16*2 + 1);
-	int di;
+    int di;
 
-	md5_init(&state);
-	md5_append(&state, (const md5_byte_t *)md5_string, size);
-	md5_finish(&state, digest);
+    md5_init(&state);
+    md5_append(&state, (const md5_byte_t *)md5_string, size);
+    md5_finish(&state, digest);
 
-	for (di = 0; di < 16; ++di)
-	    sprintf(hex_output + di * 2, "%02x", digest[di]);
+    for (di = 0; di < 16; ++di)
+        sprintf(hex_output + di * 2, "%02x", digest[di]);
 
     return hex_output;
 }
 
-struct curl_slist * SetNormalHeaders() {
-    static struct curl_slist *headers = NULL;
+void SetNormalHeaders(CURL *hnd) {
+    struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36");
     headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M");
     headers = curl_slist_append(headers, "App-Version: 3");
     headers = curl_slist_append(headers, "platform: web");
     headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
-    return headers;
+    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER,headers );
+    return;
 }
 
 size_t writeCallback(char *b, size_t size, size_t nitems, void *p)
 {
-    char *str=(char *)p;
-    CopyMemory(str+item,b,nitems);
-    item=1+item+nitems;
-    *(str+item)='\0';
+    if(!p) ExitProcess(9);
+    RESPONSE response=(RESPONSE)p;
+    if(0==response.nowsize) ZeroMemory(response.str,response.maxsize);
+
+    CopyMemory(response.str+response.nowsize,b,nitems);
+    response.nowsize=response.nowsize+nitems+1;
+    if(response.nowsize>response.maxsize)
+    {
+        return 0;
+    }
+    *(response.str+response.nowsize)='\0';
     return nitems;
 }
+
+
+
+size_t read_cb(char *ptr, size_t size, size_t nmemb, void *userdata)
+{
+
+    RESPONSE *response=(RESPONSE*)userdata;
+
+
+    ptr=memstr+(response->nowsize)+1;
+    if((response->nowsize+nitems)>(response->maxsize))
+    {
+        int i=(response->maxsize)-(response->nowsize);
+        response->nowsize=response->nowsize+nitems;
+        return i;
+    }
+
+
+
+    return nitems;
+}
+
 
 char *GetFileName(char *filepath) {
     int len=strlen(filepath);
@@ -55,99 +116,112 @@ char *GetFileName(char *filepath) {
             return filepath+i+1;
         }
     }
+    return NULL;
 }
-
-
-void PreUpload(CURL *hnd,char *FilePath) {
-    HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
-                             0,//可共享读
-                             NULL, OPEN_ALWAYS,//打开已经存在的文件
-                             FILE_ATTRIBUTE_NORMAL,NULL);
-    if(hFile==INVALID_HANDLE_VALUE) {
-        printf("打开文件失败:%d\n",GetLastError());
-        printf("filepath:%s\n",FilePath);
-        ExitProcess(2);
+/*
+此函数专用于123盘post
+@param url:网址(写全)
+@param data:格式:application/x-www-form-urlencoded
+@param 状态值，正常:0;失败:函数本身<0,其他>0
+返回值:成功，返回rootJson;失败，返回NULL
+*/
+char *Https_Post(char *url,char *data,int *httpcode) {
+    static RESPONSE response;
+    if(!(response.str))
+    {
+        response.str=(char *)malloc(MAXRESPNSESIZE);
+        if(!(response.str))
+        {
+            printf("mem alloc err");
+            httpcode=-1;
+            return NULL;
+        }
     }
-    LARGE_INTEGER lpFileSize;
-    if(0==GetFileSizeEx(hFile, &lpFileSize)) {
-        printf("获取文件大小失败： %d\n",GetLastError());
-        printf("filepath:%s\n",FilePath);
-        ExitProcess(3);
+    ZeroMemory(response.str,MAXRESPNSESIZE);
+    response.maxsize=MAXRESPNSESIZE;
+    response.nowsize=0;
+    cJSON *str_json;
+    CURL *hnd= curl_easy_init();
+    if(!hnd)
+    {
+        printf("curl_init err\n");
+        httpcode=-2;
+        return NULL;
     }
-    printf("filesize:%lld\n",lpFileSize.QuadPart);
-    char *filestr=(char *)malloc(lpFileSize.QuadPart);
-    ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
-    printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
-    char *datastr=(char *)malloc(1024*2);
-    sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
-    printf("\ndata:%s\n\n",datastr);
+    //重要!禁用ssl证书检查
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
 
+    SetNormalHeaders(hnd);
     curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS,datastr);
-    char *respondstr=(char *)malloc(1024*1024);
+    curl_easy_setopt(hnd, CURLOPT_URL, url);
+    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS,data);
+
+
+
+
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)respondstr);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)response);
     CURLcode ret = curl_easy_perform(hnd);
     if(0!=ret) {
         printf("code %d\n",ret);
         printf("err:%s\n",curl_easy_strerror(ret));
         curl_easy_cleanup(hnd);
-        ExitProcess(5);
+        //free(datastr);
+        //free(response.str);
+
     }
-    
-    
-    cJSON *str_json= cJSON_Parse(respondstr);
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpcode);
+    printf("HTTP Response Code: %ld\n", httpcode);
+    if(200!=httpcode)
+    {
+        printf("uploadRequest err,code=%ld\n",httpcode);
+        curl_easy_cleanup(hnd);
+        return NULL;
+    }
+
+    str_json= cJSON_Parse(response.str);
     if (!str_json)
     {
         printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
         cJSON_Delete(str_json);//释放内存
-        ExitProcess(4);
+        curl_easy_cleanup(hnd);
+        httpcode=-3;
+        return NULL;
     }
-
-    if(0!=cJSON_GetObjectItem(str_json, "code")->valueint){
-        printf("respose:\n");
-        printf(respondstr);
-        ExitProcess(6);
-    }
-    cJSON *data=cJSON_GetObjectItem(str_json, "data");
-    if (!data)
+    if(!(cJSON_GetObjectItem(str_json, "code")))
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        printf("Get code err\n");
+        curl_easy_cleanup(hnd);
         cJSON_Delete(str_json);
-        cJSON_Delete(data);
-        ExitProcess(4);
+        httpcode=-4;
+        return NULL;
     }
-    
-    printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
-
-    //printf("%p\n",cJSON_GetObjectItem(data, "Key"));
-    printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
-    printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
-    printf("UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
-    printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
-    printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
-
+    if(0!=cJSON_GetObjectItem(str_json, "code")->valueint) {
+        printf("respose:\n");
+        printf(response.str);
+        cJSON_Delete(str_json);
+        curl_easy_cleanup(hnd);
+        httpcode=cJSON_GetObjectItem(str_json, "code")->valueint;
+        return NULL;
+    }
     cJSON_Delete(str_json);
-   // cJSON_Delete(data);
-    // free(str);
-    free(respondstr);
-    free(filestr);
-    free(datastr);
+    curl_easy_cleanup(hnd);
+    return response.str;
 }
 
-int main() {
-    printf("started\n");
-    CURL *hnd= curl_easy_init();
-    //重要!禁用ssl证书检查
-    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, SetNormalHeaders());
 
 
-    PreUpload(hnd,(char *)".\\WindowsProject2\\curl\\1");
-/*
-    char FilePath[]=".\\WindowsProject2\\2.json";
+int UploadFileChuck(int start,int end,UPLOADDATA UploadData) {
+    char *datastr=(char *)malloc(1024*2);
+    int flag=0;
+    cJSON *data=NULL,*str_json=NULL,*presignedUrls=NULL;
+    CURL *curl=NULL;
+    CURLcode res=1;
+    struct curl_header *http_header=NULL;
+    RESPONSE response;
+    DWORD ReadLen = 0;
+    ZeroMemory(response,sizeof(RESPONSE));
     HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
                              0,//可共享读
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
@@ -155,73 +229,449 @@ int main() {
     if(hFile==INVALID_HANDLE_VALUE) {
         printf("打开文件失败:%d\n",GetLastError());
         printf("filepath:%s\n",FilePath);
-        ExitProcess(2);
+        return start;
+    }
+
+    if(!(SetFilePointerEx(hFile,(UploadData->SliceSize)*(start-1),NULL,FILE_BEGIN)))
+    {
+        printf("setFilePointerEx err\n");
+        CloseHandle(hFile);
+        return start;
+    }
+
+    for(int i = start+1; i <= end; i++) {
+        sprintf_s(datastr,1024*2,"bucket=%s&key=%s&partNumberStart=%d&partNumberEnd=%d&uploadId=%s&StorageNode=%s", UploadData.Bucket,UploadData.Key,start,i,UploadData.UploadId,UploadData.StorageNode);
+        printf("\ndata:%s\n\n",datastr);
+        str_json= cJSON_Parse(Https_Post("https://www.123pan.com/b/api/file/s3_repare_upload_parts_batch",datastr,&flag));
+        if(!flag)
+        {
+            free(datastr);
+            printf("post err");
+            return start;
+        }
+        data=cJSON_GetObjectItem(str_json, "data");
+        if (!data)
+        {
+            printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+            free(datastr);
+            return start;
+        }
+
+        ZeroMemory(datastr,1024*2);
+        sprintf_s(datastr,1024*2,"%d",start);
+        presignedUrls=cJSON_GetObjectItem(data,datastr);
+        if (!presignedUrls)
+        {
+            printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+            free(datastr);
+            return start;
+        }
+        curl = curl_easy_init();
+
+        if(curl) {
+            // 设置要上传的URL
+            curl_easy_setopt(curl, CURLOPT_URL, presignedUrls->valuestring);
+
+            // 允许上传文件
+            curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
+
+            ReadLen = 0;
+            if(((UploadData.FileData.filesize)-(UploadData.SliceSize)*start)>(UploadData.SliceSize))
+            {
+                ReadFile(hFile,memstr,UploadData.SliceSize,&ReadLen,NULL);
+                if(ReadLen!=(UploadData.SliceSize))
+                {
+                    printf("readfile err\n");
+                    CloseHandle(hFile);
+                    return start;
+                }
+            }
+            else
+            {
+                ReadFile(hFile,memstr,UploadData.SliceSize,&ReadLen,NULL);
+                if(ReadLen!=((UploadData.FileData.filesize)-(UploadData.SliceSize)*start))
+                {
+                    printf("readfile err\n");
+                    CloseHandle(hFile);
+                    return start;
+                }
+            }
+
+
+            ZeroMemory(response,sizeof(RESPONSE));
+            response.str=memstr;
+            response.maxsize=ReadLen;
+
+            curl_easy_setopt(curl, CURLOPT_READDATA,&response);
+
+            curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
+
+            // 设置文件大小
+            curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, UploadData.SliceSize);
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, UploadData.SliceSize);
+
+            // 执行上传
+            res = curl_easy_perform(curl);
+
+            // 检查错误
+            if(res != CURLE_OK) {
+                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                CloseHandle(hFile);
+                return start;
+            }
+
+            res=curl_easy_header (curl，"ETag",0,CURLH_HEADER,-1,&http_header);
+            if(res != CURLE_OK) {
+                fprintf(stderr, "curl_easy_header() failed\n");
+                CloseHandle(hFile);
+                return start;
+            }
+            if(!memcmp(http_header->value,md5_hash(memstr,ReadLen),32))
+            {
+                printf("check md5 err\n");
+                return start;
+            }
+            // 清理
+            curl_easy_cleanup(curl);
+            curl=NULL;
+        }
+
+
+        ++start;
+        presignedUrls=NULL;
+        str_json=NULL;
+        data=NULL;
+    }
+
+    CloseHandle(hFile);
+    free(datastr);
+    return 0;
+}
+
+
+int CheckAllparts(UPLOADDATA UploadData,char *filepath) {
+    char *datastr=(char *)malloc(1024*2);
+    int flag=0,size=0;
+    if(!datastr)
+    {
+        printf("malloc err\n");
+        return -5;
+    }
+    sprintf_s(datastr,1024*2,"bucket=%s&key=%s&uploadId=%s&StorageNode=%s", UploadData.Bucket,UploadData.Key,UploadData.UploadId,UploadData.StorageNode);
+    printf("\ndata:%s\n\n",datastr);
+    cJSON *str_json= cJSON_Parse(Https_Post("https://www.123pan.com/b/api/file/s3_list_upload_parts",datastr,&flag));
+    if(!flag)
+    {
+        free(datastr);
+        cJSON_Delete(str_json);
+        printf("post err");
+        return -10;
+    }
+    cJSON *jsondata=cJSON_GetObjectItem(str_json, "data");
+    if(!jsondata)
+    {
+        cJSON_Delete(str_json);
+        free(datastr);
+        printf("json err");
+        return -1;
+    }
+    cJSON * PartsArr = cJSON_GetObjectItem(jsondata,"Parts");
+    if (cJSON_IsArray(PartsArr))
+    {
+        int ArrLen = cJSON_GetArraySize(PartsArr);
+        printf("ObjArr Len: %d\n", ArrLen);
+        for (i = 0; i < ArrLen; i++)
+        {
+            cJSON * SubObj = cJSON_GetArrayItem(PartsArr, i);
+            if(NULL == SubObj)
+            {
+                continue;
+            }
+
+
+
+
+            if(!(cJSON_GetObjectItem(SubObj, "Size")))
+            {
+                cJSON_Delete(str_json);
+                free(datastr);
+                printf("Get cjosn err\n");
+                return -3;
+            }
+            if(!(cJSON_GetObjectItem(SubObj, "PartNumber")))
+            {
+                cJSON_Delete(str_json);
+                free(datastr);
+                printf("Get cjosn err\n");
+                return -3;
+            }
+            size=atoi(cJSON_GetObjectItem(SubObj, "Size")->valuestring);
+            if(0==size)
+            {
+                cJSON_Delete(str_json);
+                free(datastr);
+                printf("err");
+                return -4;
+            }
+            flag=atoi(cJSON_GetObjectItem(SubObj, "PartNumber")->valuestring);
+            if(0==flag)
+            {
+                cJSON_Delete(str_json);
+                free(datastr);
+                printf("err");
+                return -5;
+            }
+            //sprintf_s(size,sizeof(int),, UploadData.Bucket,UploadData.Key,start,i,UploadData.UploadId,UploadDa);
+            if(!(memcmp(md5_hash(memstr,size),(cJSON_GetObjectItem(SubObj, "ETag")->valuestring)+1,32))) {
+
+                UploadFileChuck(flag,flag+1,UploadData);
+            }
+
+
+
+        }
+
+
+    }
+    else
+    {
+        cJSON_Delete(str_json);
+        free(datastr);
+        return 0;
+    }
+    cJSON_Delete(str_json);
+    free(datastr);
+    return flag;
+}
+
+int PreUpload(char *FilePath,UPLOADDATA *UploadData) {
+
+    int flag=0; //此函数返回值
+    HANDLE hFile=CreateFileA(FilePath,GENERIC_READ,
+                             0,//可共享读
+                             NULL, OPEN_ALWAYS,//打开已经存在的文件
+                             FILE_ATTRIBUTE_NORMAL,NULL);
+    if(hFile==INVALID_HANDLE_VALUE) {
+        printf("打开文件失败:%d\n",GetLastError());
+        printf("filepath:%s\n",FilePath);
+        return -18;
     }
     LARGE_INTEGER lpFileSize;
     if(0==GetFileSizeEx(hFile, &lpFileSize)) {
         printf("获取文件大小失败： %d\n",GetLastError());
         printf("filepath:%s\n",FilePath);
-        ExitProcess(3);
+        CloseHandle(hFile);
+        return -20;
     }
     printf("filesize:%lld\n",lpFileSize.QuadPart);
-    char *filestr=(char *)malloc(lpFileSize.QuadPart);
-    ReadFile(hFile,filestr,lpFileSize.QuadPart,NULL,NULL);
-    
-    printf("md5:%s\n",md5_hash(filestr,lpFileSize.QuadPart));
-   // printf(filestr);
-    char *datastr=(char *)malloc(1024*2);
-    sprintf_s(datastr,1024*2 ,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5_hash(filestr,lpFileSize.QuadPart),GetFileName(FilePath),lpFileSize.QuadPart);
-    printf("\ndata:%s\n\n",datastr);
-    
+    UploadData->FileData.filesize=lpFileSize.QuadPart;
+    UploadData->FileData.filepath=FilePath;
+    UploadData->FileData.filename=GetFileName(FilePath);
+    //计算整个文件的md5
+    md5_state_t state;
+    md5_byte_t digest[16];
+    char md5str[16+1];
+    int di;
+    DWORD ReadLen = 0;
+
+    md5_init(&state);
 
 
-    cJSON *str_json= cJSON_Parse(filestr);
-    if (!str_json)
+    int count=0;
+    if(size%(MEMSIZE)==0)
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr()); //输出json格式错误信息
-
-        cJSON_Delete(str_json);//释放内存
-        exit(0);
+        count=size/(MEMSIZE);
     }
+    else
+    {
+        count=size/(MEMSIZE)+1;
+    }
+    int left=size,stdlen=MEMSIZE;
+    for(int i = 0; i < count; i++) {
+        if(left<stdlen) stdlen=left;
+        ReadFile(hFile,str,stdlen,&ReadLen,NULL);
+        if(ReadLen!=stdlen) {
+            printf("file read error\n");
+            CloseHandle(hFile);
+            return -30;
+        }
+        md5_append(&state, (const md5_byte_t *)(str), stdlen);
+        left-=MEMSIZE;
+        printf("%d\n",i);
+    }
+    printf("\n");
+    md5_finish(&state, digest);
+
+    for (di = 0; di < 16; ++di) sprintf(md5str + di * 2, "%02x", digest[di]);
+
+    CloseHandle(hFile);
+
+    char *datastr=(char *)malloc(1024*2);
+    sprintf_s(datastr,1024*2,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5str,GetFileName(FilePath),lpFileSize.QuadPart);
+    printf("\ndata:%s\n\n",datastr);
+
+
+    cJSON *str_json= cJSON_Parse(Https_Post("https://www.123pan.com/b/api/file/upload_request",datastr,&flag));
     cJSON *data=cJSON_GetObjectItem(str_json, "data");
-    //printf(cJSON_Print(data));
-    //printf("%p\n",data);
+    if(!flag)
+    {
+        free(datastr);
+        printf("post err");
+        return flag;
+    }
+    if (!data)
+    {
+        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        free(datastr);
+        return -4;
+    }
+
     printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
+    if(cJSON_GetObjectItem(data, "Reuse")->valueint==1)
+    {
+        printf("%s秒传成功",FilePath);
+        //ZeroMemory(lpFileSize,sizeof(lpFileSize));
+        free(datastr);
+        cJSON_Delete(str_json);
+        return 0;
+    }
+
+    if(!cJSON_GetObjectItem(data, "Key"))
+    {
+        printf("GetData err\n");
+        flag=1;
+        goto goto_exit;
+    }
+    if(!cJSON_GetObjectItem(data, "Bucket"))
+    {
+        printf("GetData err\n");
+        flag=2;
+        goto goto_exit;
+    }
+    if(!cJSON_GetObjectItem(data, "UploadId"))
+    {
+        printf("GetData err\n");
+        flag=3;
+        goto goto_exit;
+    }
+    if(!cJSON_GetObjectItem(data, "StorageNode"))
+    {
+        printf("GetData err\n");
+        flag=4;
+        goto goto_exit;
+    }
+    if(!cJSON_GetObjectItem(data, "FileId"))
+    {
+        printf("GetData err\n");
+        flag=5;
+        goto goto_exit;
+    }
+    if(!cJSON_GetObjectItem(data, "SliceSize"))
+    {
+        printf("GetData err\n");
+        flag=6;
+        goto goto_exit;
+    }
+    UploadData->data=str_json;
+    UploadData->Key=cJSON_GetObjectItem(data, "Key")->valuestring;
+    UploadData->Bucket=cJSON_GetObjectItem(data, "Bucket")->valuestring;
+    UploadData->UploadId=cJSON_GetObjectItem(data, "UploadId")->valuestring;
+    UploadData->StorageNode=cJSON_GetObjectItem(data, "StorageNode")->valuestring;
+    UploadData->SliceSize=atoi(cJSON_GetObjectItem(data, "SliceSize")->valuestring);
+    UploadData->FileId=cJSON_GetObjectItem(data, "FileId")->valueint;
+    if((UploadData->SliceSize)<=0)
+    {
+        printf("SliceSize err\n");
+        flag=7;
+        goto goto_exit;
+    }
+    if((UploadData->FileId)<=0)
+    {
+        printf("FileId err\n");
+        flag=8;
+        goto goto_exit;
+    }
+
+    if((lpFileSize.QuadPart)>(UploadData->SliceSize))
+    {
+        UploadData.isMultipart=1;
+    }
+    else
+    {
+        UploadData.isMultipart=0;
+    }
+//printf("%p\n",cJSON_GetObjectItem(data, "Key"));
     printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
     printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
     printf("UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
     printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
     printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
-    cJSON_Delete(str_json);//释放内存
+    return 0;
+goto_exit:
+    cJSON_Delete(str_json);
+    // cJSON_Delete(data);
+    // free(str);
+    //free(response.str);
+    free(datastr);
+    //response.maxsize=MAXRESPNSESIZE;
+    // response.nowsize=0;
+
+    //curl_easy_cleanup(hnd);
+    return flag;
+}
 
 
+/*
+此函数为完成上传，
+返回值:成功->0，失败!=0
 */
-    /*
-    CURL *hnd = curl_easy_init();
-    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYHOST, 0);
+int CompleteUpload(UPLOADDATA UploadData) {
 
-    curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_easy_setopt(hnd, CURLOPT_URL, "https://www.123pan.com/b/api/file/upload_request");
+    char *datastr=(char *)malloc(1024*2);
+    sprintf_s(datastr,1024*2,"StorageNode=%s&bucket=%s&key=%s&uploadId=%s&fileId=%d&fileSize=5857&isMultipart=0"
+              UploadData.StorageNode,UploadData.Bucket,UploadData.Key,UploadData.UploadId,UploadData.FileId,UploadData.FileData.filesize,UploadData.isMultipart);
+    printf("\ndata:%s\n\n",datastr);
+    int flag=0;
 
-    struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36");
-    headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M");
-    headers = curl_slist_append(headers, "LoginUuid: edf2d4acef7d7d559e10c12d5b5baaa70fdd6b27fb22af35e48c1aa6b4b778bda1647c17962d60e792e4926a08c9dcf0");
-    headers = curl_slist_append(headers, "App-Version: 3");
-    headers = curl_slist_append(headers, "platform: web");
-    headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+    Https_Post("https://www.123pan.com/b/api/file/upload_complete",datastr,&flag)
+    free(datastr);
+    return 0;
+}
 
-    headers = curl_slist_append(headers, "Origin: https://www.123pan.com");
-    curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
+int main() {
+    printf("started\n");
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    
+    memstr=NULL;
+    memstr=malloc(MEMSIZE);
+    if(!memstr) {
+        printf("mem alloc err\n");
+        return 1;
+    }
 
-    curl_easy_setopt(hnd, CURLOPT_POSTFIELDS, "driveId=0&etag=d41d8cd98f00b204e9800998ecf8427e&fileName=txt111112&parentFileId=0&size=0&type=0");
-
-    CURLcode ret = curl_easy_perform(hnd);
-    printf("code %d\n",ret);
-    //if(!ret){
-        printf(curl_easy_strerror(ret));
-   // }
-*/
+    UPLOADDATA UploadData;
+    ZeroMemory(UploadData,sizeof(UPLOADDATA));
+    
+    
+    if(0==(PreUpload((char *)".\\WindowsProject2\\curl\\1",&UploadData)))
+    {
+       if(UploadData.data!=NULL){
+           UploadFileChuck(1,2,UploadData);
+           CompleteUpload(UploadData);
+           cJSON_Delete(UploadData.data);
+           ZeroMemory(UploadData,sizeof(UPLOADDATA));
+       }
+    }
+    
+    if(0==(PreUpload((char *)".\\WindowsProject2\\x64\\Release\\WindowsProject2.exe",&UploadData)))
+    {
+       if(UploadData.data!=NULL){
+           UploadFileChuck(1,2,UploadData);
+           CompleteUpload(UploadData);
+           cJSON_Delete(UploadData.data);
+           ZeroMemory(UploadData,sizeof(UPLOADDATA));
+       }
+    }
     printf("ended\n");
 }
