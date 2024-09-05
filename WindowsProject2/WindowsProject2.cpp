@@ -598,11 +598,11 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
 
     if((lpFileSize.QuadPart)>(UploadData->SliceSize))
     {
-        UploadData.isMultipart=1;
+        UploadData->isMultipart=1;
     }
     else
     {
-        UploadData.isMultipart=0;
+        UploadData->isMultipart=0;
     }
 //printf("%p\n",cJSON_GetObjectItem(data, "Key"));
     printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
