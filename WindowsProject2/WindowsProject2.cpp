@@ -325,7 +325,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
             }
 
             ret=curl_easy_header(curl,"ETag",0,CURLH_HEADER,-1,&http_header);
-            if(*ret != CURLE_OK) {
+            if(ret != CURLE_OK) {
                 fprintf(stderr, "curl_easy_header() failed\n");
                 CloseHandle(hFile);
                 return start;
