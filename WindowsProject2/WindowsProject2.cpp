@@ -644,6 +644,8 @@ int CompleteUpload(struct UPLOADDATA UploadData) {
 
 int main() {
     printf("started\n");
+
+    /*
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
@@ -652,7 +654,7 @@ int main() {
         printf("mem alloc err\n");
         return 1;
     }
-
+    
     struct UPLOADDATA UploadData;
     ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
     
@@ -676,5 +678,6 @@ int main() {
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
     }
+    */
     printf("ended\n");
 }
