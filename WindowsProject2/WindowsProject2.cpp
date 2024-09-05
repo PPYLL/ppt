@@ -62,7 +62,7 @@ char * md5_hash(char * md5_string,int size)
 void SetNormalHeaders(CURL *hnd) {
     struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "User-Agent: Mozilla/5.0 (Linux; Android 12; JLH-AN00 Build/HONORJLH-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 Mobile Safari/537.36");
-    headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMzNzU5NjcsImlhdCI6MTcyMjc3MTE2NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.taBpf9iV0FQikSPk6594pWT444HMAMQn4nXjPkZcg6M");
+    headers = curl_slist_append(headers, "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjYxMTc4NTcsImlhdCI6MTcyNTUxMzA1NywiaWQiOjE4MzczNzg4NTcsIm1haWwiOiIiLCJuaWNrbmFtZSI6IjE4OTcyOTA4NjE3Iiwic3VwcGVyIjpmYWxzZSwidXNlcm5hbWUiOjE4OTcyOTA4NjE3LCJ2IjowfQ.d4QgDvfA6ITBZ8hkBTMgj29yl2n9ktsUSiN-Bpl0v9s");
     headers = curl_slist_append(headers, "App-Version: 3");
     headers = curl_slist_append(headers, "platform: web");
     headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
@@ -82,7 +82,7 @@ size_t writeCallback(char *b, size_t size, size_t nitems, void *p)
     {
         return 0;
     }
-    *(response->str+response->nowsiz)e='\0';
+    *(response->str+response->nowsize)='\0';
     return nitems;
 }
 
@@ -161,7 +161,7 @@ char *Https_Post(char *url,char *data,int *httpcode) {
 
 
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)response);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&response);
     CURLcode ret = curl_easy_perform(hnd);
     if(0!=ret) {
         printf("code %d\n",ret);
@@ -171,7 +171,7 @@ char *Https_Post(char *url,char *data,int *httpcode) {
         //free(response.str);
 
     }
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpcode);
+    curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &httpcode);
     printf("HTTP Response Code: %ld\n", *httpcode);
     if(200!=(*httpcode))
     {
@@ -218,10 +218,11 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
     cJSON *data=NULL,*str_json=NULL,*presignedUrls=NULL;
     CURL *curl=NULL;
     CURLcode res;
+    CURLHcode ret;
     struct curl_header *http_header=NULL;
     struct RESPONSE response;
     DWORD ReadLen = 0;
-    ZeroMemory(response,sizeof(struct RESPONSE));
+    ZeroMemory(&response,sizeof(struct RESPONSE));
     HANDLE hFile=CreateFileA(UploadData.FileData.filepath,GENERIC_READ,
                              0,//可共享读
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
@@ -231,8 +232,10 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
         printf("filepath:%s\n",UploadData.FileData.filepath);
         return start;
     }
-
-    if(!(SetFilePointerEx(hFile,(UploadData.SliceSize)*(start-1),NULL,FILE_BEGIN)))
+	LARGE_INTEGER Sizeinfo;
+    ZeroMemory(&Sizeinfo,sizeof(LARGE_INTEGER));
+    Sizeinfo.QuadPart=(UploadData.SliceSize)*(start-1);
+    if(!(SetFilePointerEx(hFile,Sizeinfo,NULL,FILE_BEGIN)))
     {
         printf("setFilePointerEx err\n");
         CloseHandle(hFile);
@@ -299,7 +302,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
             }
 
 
-            ZeroMemory(response,sizeof(struct RESPONSE));
+            ZeroMemory(&response,sizeof(struct RESPONSE));
             response.str=memstr;
             response.maxsize=ReadLen;
 
@@ -321,8 +324,8 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
                 return start;
             }
 
-            res=curl_easy_header(curl,"ETag",0,CURLH_HEADER,-1,&http_header);
-            if(res != CURLE_OK) {
+            ret=curl_easy_header(curl,"ETag",0,CURLH_HEADER,-1,&http_header);
+            if(*ret != CURLE_OK) {
                 fprintf(stderr, "curl_easy_header() failed\n");
                 CloseHandle(hFile);
                 return start;
@@ -481,7 +484,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     int count=0;
     if(lpFileSize.QuadPart%(MEMSIZE)==0)
     {
-        count=size/(MEMSIZE);
+        count=lpFileSize.QuadPart/(MEMSIZE);
     }
     else
     {
@@ -644,14 +647,14 @@ int main() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
-    memstr=malloc(MEMSIZE);
+    memstr=(char *)malloc(MEMSIZE);
     if(!memstr) {
         printf("mem alloc err\n");
         return 1;
     }
 
     struct UPLOADDATA UploadData;
-    ZeroMemory(UploadData,sizeof(struct UPLOADDATA));
+    ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
     
     
     if(0==(PreUpload((char *)".\\WindowsProject2\\curl\\1",&UploadData)))
@@ -660,7 +663,7 @@ int main() {
            UploadFileChuck(1,2,UploadData);
            CompleteUpload(UploadData);
            cJSON_Delete(UploadData.data);
-           ZeroMemory(UploadData,sizeof(struct UPLOADDATA));
+           ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
     }
     
@@ -670,7 +673,7 @@ int main() {
            UploadFileChuck(1,2,UploadData);
            CompleteUpload(UploadData);
            cJSON_Delete(UploadData.data);
-           ZeroMemory(UploadData,sizeof(struct UPLOADDATA));
+           ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
     }
     printf("ended\n");
