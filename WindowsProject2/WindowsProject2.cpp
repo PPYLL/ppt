@@ -683,9 +683,10 @@ int main() {
                CompleteUpload(UploadData);
            }
            printf("333\n");
-           */
+           
            cJSON_Delete(UploadData.data);
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
+            */
        }
     }
     
