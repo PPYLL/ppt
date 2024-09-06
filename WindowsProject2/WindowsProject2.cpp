@@ -469,6 +469,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
         return -20;
     }
     printf("filesize:%lld\n",lpFileSize.QuadPart);
+    printf("path::%s\n",FilePath);
     UploadData->FileData.filesize=lpFileSize.QuadPart;
     UploadData->FileData.filepath=FilePath;
     UploadData->FileData.filename=GetFileName(FilePath);
