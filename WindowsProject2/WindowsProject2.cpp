@@ -540,7 +540,8 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
         cJSON_Delete(str_json);
         return 0;
     }
-
+    printf("go\n");
+    /*
     if(!cJSON_GetObjectItem(data, "Key"))
     {
         printf("GetData err\n");
@@ -612,6 +613,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
     printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
     return 0;
+    
 goto_exit:
     cJSON_Delete(str_json);
     // cJSON_Delete(data);
@@ -623,6 +625,8 @@ goto_exit:
 
     //curl_easy_cleanup(hnd);
     return flag;
+    */
+    return 0;
 }
 
 
