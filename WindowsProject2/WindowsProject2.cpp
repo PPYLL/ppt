@@ -676,12 +676,14 @@ int main() {
        if(UploadData.data!=NULL){
            printf("111\n");
            Sleep(500);
+           /*
            if(0==UploadFileChuck(1,2,UploadData)){
                printf("222\n");
                Sleep(500);
                CompleteUpload(UploadData);
            }
            printf("333\n");
+           */
            cJSON_Delete(UploadData.data);
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
