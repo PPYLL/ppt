@@ -510,7 +510,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     for (di = 0; di < 16; ++di) sprintf(md5str + di * 2, "%02x", digest[di]);
 	ZeroMemory(memstr,MEMSIZE);
     CloseHandle(hFile);
-
+    /*
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5str,GetFileName(FilePath),lpFileSize.QuadPart);
     printf("\ndata:%s\n\n",datastr);
@@ -540,6 +540,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
         cJSON_Delete(str_json);
         return 0;
     }
+    */
     printf("go\n");
     /*
     if(!cJSON_GetObjectItem(data, "Key"))
