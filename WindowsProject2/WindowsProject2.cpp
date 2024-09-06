@@ -472,6 +472,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     UploadData->FileData.filesize=lpFileSize.QuadPart;
     UploadData->FileData.filepath=FilePath;
     UploadData->FileData.filename=GetFileName(FilePath);
+    /*
     //计算整个文件的md5
     md5_state_t state;
     md5_byte_t digest[16];
@@ -510,6 +511,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     for (di = 0; di < 16; ++di) sprintf(md5str + di * 2, "%02x", digest[di]);
 	ZeroMemory(memstr,MEMSIZE);
     CloseHandle(hFile);
+    */
     /*
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5str,GetFileName(FilePath),lpFileSize.QuadPart);
