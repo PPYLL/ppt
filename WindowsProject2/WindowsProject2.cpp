@@ -235,6 +235,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
 	LARGE_INTEGER Sizeinfo;
     ZeroMemory(&Sizeinfo,sizeof(LARGE_INTEGER));
     Sizeinfo.QuadPart=(UploadData.SliceSize)*(start-1);
+    
     if(!(SetFilePointerEx(hFile,Sizeinfo,NULL,FILE_BEGIN)))
     {
         printf("setFilePointerEx err\n");
@@ -311,8 +312,8 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
             curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
 
             // 设置文件大小
-            curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, UploadData.SliceSize);
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, UploadData.SliceSize);
+           // curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, UploadData.SliceSize);
+            //curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, UploadData.SliceSize);
 
             // 执行上传
             res = curl_easy_perform(curl);
@@ -645,7 +646,7 @@ int CompleteUpload(struct UPLOADDATA UploadData) {
 int main() {
     printf("started\n");
 
-    /*
+    
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
@@ -658,7 +659,7 @@ int main() {
     struct UPLOADDATA UploadData;
     ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
     
-    
+    /*
     if(0==(PreUpload((char *)".\\WindowsProject2\\curl\\1",&UploadData)))
     {
        if(UploadData.data!=NULL){
@@ -668,16 +669,23 @@ int main() {
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
     }
-    
+    */
+
     if(0==(PreUpload((char *)".\\WindowsProject2\\x64\\Release\\WindowsProject2.exe",&UploadData)))
     {
        if(UploadData.data!=NULL){
-           UploadFileChuck(1,2,UploadData);
-           CompleteUpload(UploadData);
+           printf("111\n");
+           Sleep(500);
+           if(0==UploadFileChuck(1,2,UploadData)){
+               printf("222\n");
+               Sleep(500);
+               CompleteUpload(UploadData);
+           }
+           printf("333\n");
            cJSON_Delete(UploadData.data);
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
        }
     }
-    */
+    
     printf("ended\n");
 }
