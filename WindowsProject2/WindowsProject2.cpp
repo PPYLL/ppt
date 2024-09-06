@@ -473,7 +473,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     UploadData->FileData.filesize=lpFileSize.QuadPart;
     UploadData->FileData.filepath=FilePath;
     UploadData->FileData.filename=GetFileName(FilePath);
-    /*
+    
     //计算整个文件的md5
     md5_state_t state;
     md5_byte_t digest[16];
@@ -543,9 +543,9 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
         cJSON_Delete(str_json);
         return 0;
     }
-    */
+    
     printf("go\n");
-    /*
+    
     if(!cJSON_GetObjectItem(data, "Key"))
     {
         printf("GetData err\n");
@@ -629,7 +629,7 @@ goto_exit:
 
     //curl_easy_cleanup(hnd);
     return flag;
-    */
+    
     return 0;
 }
 
@@ -679,12 +679,12 @@ int main() {
     }
     */
 
-    if(0==(PreUpload((char *)".\\WindowsProject2\\x64\\Release\\WindowsProject2.exe",&UploadData)))
+    if(0==(PreUpload((char *)".\\x64\\Release\\WindowsProject2.exe",&UploadData)))
     {
        if(UploadData.data!=NULL){
            printf("111\n");
            Sleep(500);
-           /*
+           
            if(0==UploadFileChuck(1,2,UploadData)){
                printf("222\n");
                Sleep(500);
@@ -694,7 +694,7 @@ int main() {
            
            cJSON_Delete(UploadData.data);
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
-            */
+            
        }
     }
     
