@@ -57,7 +57,7 @@ char * md5_hash(char * md5_string,int size)
     md5_finish(&state, digest);
 
     for (di = 0; di < 16; ++di)
-        sfprintf(fp,hex_output + di * 2, "%02x", digest[di]);
+        sprintf(hex_output + di * 2, "%02x", digest[di]);
 
     return hex_output;
 }
@@ -323,14 +323,14 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
 
             // 检查错误
             if(res != CURLE_OK) {
-                ffprintf(fp,stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                fprintf(fp, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
                 CloseHandle(hFile);
                 return start;
             }
 
             ret=curl_easy_header(curl,"ETag",0,CURLH_HEADER,-1,&http_header);
             if(ret != CURLE_OK) {
-                ffprintf(fp,stderr, "curl_easy_header() failed\n");
+                fprintf(fp,"curl_easy_header() failed\n");
                 CloseHandle(hFile);
                 return start;
             }
@@ -512,7 +512,7 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     fprintf(fp,"\n");
     md5_finish(&state, digest);
 
-    for (di = 0; di < 16; ++di) sfprintf(fp,md5str + di * 2, "%02x", digest[di]);
+    for (di = 0; di < 16; ++di) sprintf(md5str + di * 2, "%02x", digest[di]);
 	ZeroMemory(memstr,MEMSIZE);
     CloseHandle(hFile);
     
@@ -706,6 +706,6 @@ int main() {
             
        }
     }
-    close(fp);
+    fclose(fp);
     fprintf(fp,"ended\n");
 }
