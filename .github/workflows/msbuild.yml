@@ -37,7 +37,7 @@ jobs:
       run: |
            msbuild /m /p:Configuration=Release ${{env.SOLUTION_FILE_PATH}}  #x64
            Copy-Item -Path .\x64\Release\WindowsProject2.exe -Destination .\WindowsProject2
-           .\WindowsProject2\WindowsProject2.exe
+           
 #           Copy-Item -Path .\x64\Release\WindowsProject2.lib -Destination .\WindowsProject2
 
     - name: upload__artifact
@@ -45,5 +45,7 @@ jobs:
       with:
        path: .
 
-#    - name: test
- #     run: cmd /c 
+    - name: test
+      run: |
+           .\WindowsProject2\WindowsProject2.exe
+           Out-File -FilePath .\WindowsProject2\info.txt
