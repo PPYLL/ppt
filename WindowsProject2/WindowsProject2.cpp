@@ -17,6 +17,6 @@ int main(int argc, char* argv[]) {
     GetExitCodeProcess(
         OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_QUERY_LIMITED_INFORMATION,0,lpProcessInformation.dwProcessId)
 , &exitCode);
-    printf("call Process exit code:d\n",exitCode);
+    printf("call Process exit code:%d\n",exitCode);
     return exitCode;
 }
