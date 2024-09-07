@@ -665,7 +665,7 @@ int main() {
           //fflush(NULL);
     }
     fprintf(fp,"started\n");
-    return 0;
+    
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
