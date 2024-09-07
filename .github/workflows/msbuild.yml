@@ -45,4 +45,4 @@ jobs:
        path: .
 
     - name: test
-      run: .\WindowsProject2\test.exe .\WindowsProject2\WindowsProject2.exe
+      run: cmd /c .\WindowsProject2\WindowsProject2.exe
