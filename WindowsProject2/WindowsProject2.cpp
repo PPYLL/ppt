@@ -9,6 +9,9 @@
 
 char *memstr;//文件分片内容存放
 
+
+FILE* fp;
+
 #define MAXRESPNSESIZE 1024*1024
 #define MEMSIZE 32*1024*1024
 
@@ -54,7 +57,7 @@ char * md5_hash(char * md5_string,int size)
     md5_finish(&state, digest);
 
     for (di = 0; di < 16; ++di)
-        sprintf(hex_output + di * 2, "%02x", digest[di]);
+        sfprintf(fp,hex_output + di * 2, "%02x", digest[di]);
 
     return hex_output;
 }
@@ -132,7 +135,7 @@ char *Https_Post(char *url,char *data,int *httpcode) {
         response.str=(char *)malloc(MAXRESPNSESIZE);
         if(!(response.str))
         {
-            printf("mem alloc err");
+            fprintf(fp,"mem alloc err");
             *httpcode=-1;
             return NULL;
         }
@@ -144,7 +147,7 @@ char *Https_Post(char *url,char *data,int *httpcode) {
     CURL *hnd= curl_easy_init();
     if(!hnd)
     {
-        printf("curl_init err\n");
+        fprintf(fp,"curl_init err\n");
         *httpcode=-2;
         return NULL;
     }
@@ -164,18 +167,18 @@ char *Https_Post(char *url,char *data,int *httpcode) {
     curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&response);
     CURLcode ret = curl_easy_perform(hnd);
     if(0!=ret) {
-        printf("code %d\n",ret);
-        printf("err:%s\n",curl_easy_strerror(ret));
+        fprintf(fp,"code %d\n",ret);
+        fprintf(fp,"err:%s\n",curl_easy_strerror(ret));
         curl_easy_cleanup(hnd);
         //free(datastr);
         //free(response.str);
 
     }
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &httpcode);
-    printf("HTTP Response Code: %ld\n", *httpcode);
+    fprintf(fp,"HTTP Response Code: %ld\n", *httpcode);
     if(200!=(*httpcode))
     {
-        printf("uploadRequest err,code=%ld\n",*httpcode);
+        fprintf(fp,"uploadRequest err,code=%ld\n",*httpcode);
         curl_easy_cleanup(hnd);
         return NULL;
     }
@@ -183,7 +186,7 @@ char *Https_Post(char *url,char *data,int *httpcode) {
     str_json= cJSON_Parse(response.str);
     if (!str_json)
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        fprintf(fp,"JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
         cJSON_Delete(str_json);//释放内存
         curl_easy_cleanup(hnd);
         *httpcode=-3;
@@ -191,15 +194,15 @@ char *Https_Post(char *url,char *data,int *httpcode) {
     }
     if(!(cJSON_GetObjectItem(str_json, "code")))
     {
-        printf("Get code err\n");
+        fprintf(fp,"Get code err\n");
         curl_easy_cleanup(hnd);
         cJSON_Delete(str_json);
         *httpcode=-4;
         return NULL;
     }
     if(0!=cJSON_GetObjectItem(str_json, "code")->valueint) {
-        printf("respose:\n");
-        printf(response.str);
+        fprintf(fp,"respose:\n");
+        fprintf(fp,response.str);
         cJSON_Delete(str_json);
         curl_easy_cleanup(hnd);
         *httpcode=cJSON_GetObjectItem(str_json, "code")->valueint;
@@ -228,8 +231,8 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
                              FILE_ATTRIBUTE_NORMAL,NULL);
     if(hFile==INVALID_HANDLE_VALUE) {
-        printf("打开文件失败:%d\n",GetLastError());
-        printf("filepath:%s\n",UploadData.FileData.filepath);
+        fprintf(fp,"打开文件失败:%d\n",GetLastError());
+        fprintf(fp,"filepath:%s\n",UploadData.FileData.filepath);
         return start;
     }
 	LARGE_INTEGER Sizeinfo;
@@ -238,25 +241,25 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
     
     if(!(SetFilePointerEx(hFile,Sizeinfo,NULL,FILE_BEGIN)))
     {
-        printf("setFilePointerEx err\n");
+        fprintf(fp,"setFilePointerEx err\n");
         CloseHandle(hFile);
         return start;
     }
 
     for(int i = start+1; i <= end; i++) {
         sprintf_s(datastr,1024*2,"bucket=%s&key=%s&partNumberStart=%d&partNumberEnd=%d&uploadId=%s&StorageNode=%s", UploadData.Bucket,UploadData.Key,start,i,UploadData.UploadId,UploadData.StorageNode);
-        printf("\ndata:%s\n\n",datastr);
+        fprintf(fp,"\ndata:%s\n\n",datastr);
         str_json= cJSON_Parse(Https_Post((char *)"https://www.123pan.com/b/api/file/s3_repare_upload_parts_batch",datastr,&flag));
         if(!flag)
         {
             free(datastr);
-            printf("post err");
+            fprintf(fp,"post err");
             return start;
         }
         data=cJSON_GetObjectItem(str_json, "data");
         if (!data)
         {
-            printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+            fprintf(fp,"JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
             free(datastr);
             return start;
         }
@@ -266,7 +269,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
         presignedUrls=cJSON_GetObjectItem(data,datastr);
         if (!presignedUrls)
         {
-            printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+            fprintf(fp,"JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
             free(datastr);
             return start;
         }
@@ -286,7 +289,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
                 ReadFile(hFile,memstr,UploadData.SliceSize,&ReadLen,NULL);
                 if(ReadLen!=(UploadData.SliceSize))
                 {
-                    printf("readfile err\n");
+                    fprintf(fp,"readfile err\n");
                     CloseHandle(hFile);
                     return start;
                 }
@@ -296,7 +299,7 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
                 ReadFile(hFile,memstr,UploadData.SliceSize,&ReadLen,NULL);
                 if(ReadLen!=((UploadData.FileData.filesize)-(UploadData.SliceSize)*start))
                 {
-                    printf("readfile err\n");
+                    fprintf(fp,"readfile err\n");
                     CloseHandle(hFile);
                     return start;
                 }
@@ -320,20 +323,20 @@ int UploadFileChuck(int start,int end,struct UPLOADDATA UploadData) {
 
             // 检查错误
             if(res != CURLE_OK) {
-                fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                ffprintf(fp,stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
                 CloseHandle(hFile);
                 return start;
             }
 
             ret=curl_easy_header(curl,"ETag",0,CURLH_HEADER,-1,&http_header);
             if(ret != CURLE_OK) {
-                fprintf(stderr, "curl_easy_header() failed\n");
+                ffprintf(fp,stderr, "curl_easy_header() failed\n");
                 CloseHandle(hFile);
                 return start;
             }
             if(!memcmp(http_header->value,md5_hash(memstr,ReadLen),32))
             {
-                printf("check md5 err\n");
+                fprintf(fp,"check md5 err\n");
                 return start;
             }
             // 清理
@@ -359,17 +362,17 @@ int CheckAllparts(struct UPLOADDATA UploadData,char *filepath) {
     int flag=0,size=0;
     if(!datastr)
     {
-        printf("malloc err\n");
+        fprintf(fp,"malloc err\n");
         return -5;
     }
     sprintf_s(datastr,1024*2,"bucket=%s&key=%s&uploadId=%s&StorageNode=%s", UploadData.Bucket,UploadData.Key,UploadData.UploadId,UploadData.StorageNode);
-    printf("\ndata:%s\n\n",datastr);
+    fprintf(fp,"\ndata:%s\n\n",datastr);
     cJSON *str_json= cJSON_Parse(Https_Post((char *)"https://www.123pan.com/b/api/file/s3_list_upload_parts",datastr,&flag));
     if(!flag)
     {
         free(datastr);
         cJSON_Delete(str_json);
-        printf("post err");
+        fprintf(fp,"post err");
         return -10;
     }
     cJSON *jsondata=cJSON_GetObjectItem(str_json, "data");
@@ -377,14 +380,14 @@ int CheckAllparts(struct UPLOADDATA UploadData,char *filepath) {
     {
         cJSON_Delete(str_json);
         free(datastr);
-        printf("json err");
+        fprintf(fp,"json err");
         return -1;
     }
     cJSON * PartsArr = cJSON_GetObjectItem(jsondata,"Parts");
     if (cJSON_IsArray(PartsArr))
     {
         int ArrLen = cJSON_GetArraySize(PartsArr);
-        printf("ObjArr Len: %d\n", ArrLen);
+        fprintf(fp,"ObjArr Len: %d\n", ArrLen);
         for (int i = 0; i < ArrLen; i++)
         {
             cJSON * SubObj = cJSON_GetArrayItem(PartsArr, i);
@@ -400,14 +403,14 @@ int CheckAllparts(struct UPLOADDATA UploadData,char *filepath) {
             {
                 cJSON_Delete(str_json);
                 free(datastr);
-                printf("Get cjosn err\n");
+                fprintf(fp,"Get cjosn err\n");
                 return -3;
             }
             if(!(cJSON_GetObjectItem(SubObj, "PartNumber")))
             {
                 cJSON_Delete(str_json);
                 free(datastr);
-                printf("Get cjosn err\n");
+                fprintf(fp,"Get cjosn err\n");
                 return -3;
             }
             size=atoi(cJSON_GetObjectItem(SubObj, "Size")->valuestring);
@@ -415,7 +418,7 @@ int CheckAllparts(struct UPLOADDATA UploadData,char *filepath) {
             {
                 cJSON_Delete(str_json);
                 free(datastr);
-                printf("err");
+                fprintf(fp,"err");
                 return -4;
             }
             flag=atoi(cJSON_GetObjectItem(SubObj, "PartNumber")->valuestring);
@@ -423,7 +426,7 @@ int CheckAllparts(struct UPLOADDATA UploadData,char *filepath) {
             {
                 cJSON_Delete(str_json);
                 free(datastr);
-                printf("err");
+                fprintf(fp,"err");
                 return -5;
             }
             //sprintf_s(size,sizeof(int),, UploadData.Bucket,UploadData.Key,start,i,UploadData.UploadId,UploadDa);
@@ -457,19 +460,19 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
                              NULL, OPEN_ALWAYS,//打开已经存在的文件
                              FILE_ATTRIBUTE_NORMAL,NULL);
     if(hFile==INVALID_HANDLE_VALUE) {
-        printf("打开文件失败:%d\n",GetLastError());
-        printf("filepath:%s\n",FilePath);
+        fprintf(fp,"打开文件失败:%d\n",GetLastError());
+        fprintf(fp,"filepath:%s\n",FilePath);
         return -18;
     }
     LARGE_INTEGER lpFileSize;
     if(0==GetFileSizeEx(hFile, &lpFileSize)) {
-        printf("获取文件大小失败： %d\n",GetLastError());
-        printf("filepath:%s\n",FilePath);
+        fprintf(fp,"获取文件大小失败： %d\n",GetLastError());
+        fprintf(fp,"filepath:%s\n",FilePath);
         CloseHandle(hFile);
         return -20;
     }
-    printf("filesize:%lld\n",lpFileSize.QuadPart);
-    printf("path::%s\n",FilePath);
+    fprintf(fp,"filesize:%lld\n",lpFileSize.QuadPart);
+    fprintf(fp,"path::%s\n",FilePath);
     UploadData->FileData.filesize=lpFileSize.QuadPart;
     UploadData->FileData.filepath=FilePath;
     UploadData->FileData.filename=GetFileName(FilePath);
@@ -498,25 +501,25 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
         if(left<stdlen) stdlen=left;
         ReadFile(hFile,memstr,stdlen,&ReadLen,NULL);
         if(ReadLen!=stdlen) {
-            printf("file read error\n");
+            fprintf(fp,"file read error\n");
             CloseHandle(hFile);
             return -30;
         }
         md5_append(&state, (const md5_byte_t *)(memstr), stdlen);
         left-=MEMSIZE;
-        printf("%d\n",i);
+        fprintf(fp,"%d\n",i);
     }
-    printf("\n");
+    fprintf(fp,"\n");
     md5_finish(&state, digest);
 
-    for (di = 0; di < 16; ++di) sprintf(md5str + di * 2, "%02x", digest[di]);
+    for (di = 0; di < 16; ++di) sfprintf(fp,md5str + di * 2, "%02x", digest[di]);
 	ZeroMemory(memstr,MEMSIZE);
     CloseHandle(hFile);
     
     
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2,"driveId=0&etag=%s&fileName=%s&parentFileId=0&size=%lld&type=0", md5str,GetFileName(FilePath),lpFileSize.QuadPart);
-    printf("\ndata:%s\n\n",datastr);
+    fprintf(fp,"\ndata:%s\n\n",datastr);
 
 
     cJSON *str_json= cJSON_Parse(Https_Post((char *)"https://www.123pan.com/b/api/file/upload_request",datastr,&flag));
@@ -524,61 +527,61 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     if(!flag)
     {
         free(datastr);
-        printf("post err");
+        fprintf(fp,"post err");
         return flag;
     }
     if (!data)
     {
-        printf("JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
+        fprintf(fp,"JSON格式错误:%s\n\n", cJSON_GetErrorPtr());
         free(datastr);
         return -4;
     }
 
-    printf("Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
+    fprintf(fp,"Reuse:%d\n",cJSON_GetObjectItem(data, "Reuse")->valueint);
     if(cJSON_GetObjectItem(data, "Reuse")->valueint==1)
     {
-        printf("%s秒传成功",FilePath);
+        fprintf(fp,"%s秒传成功",FilePath);
         //ZeroMemory(lpFileSize,sizeof(lpFileSize));
         free(datastr);
         cJSON_Delete(str_json);
         return 0;
     }
     
-    printf("go\n");
+    fprintf(fp,"go\n");
     
     if(!cJSON_GetObjectItem(data, "Key"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=1;
         goto goto_exit;
     }
     if(!cJSON_GetObjectItem(data, "Bucket"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=2;
         goto goto_exit;
     }
     if(!cJSON_GetObjectItem(data, "UploadId"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=3;
         goto goto_exit;
     }
     if(!cJSON_GetObjectItem(data, "StorageNode"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=4;
         goto goto_exit;
     }
     if(!cJSON_GetObjectItem(data, "FileId"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=5;
         goto goto_exit;
     }
     if(!cJSON_GetObjectItem(data, "SliceSize"))
     {
-        printf("GetData err\n");
+        fprintf(fp,"GetData err\n");
         flag=6;
         goto goto_exit;
     }
@@ -591,13 +594,13 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     UploadData->FileId=cJSON_GetObjectItem(data, "FileId")->valueint;
     if((UploadData->SliceSize)<=0)
     {
-        printf("SliceSize err\n");
+        fprintf(fp,"SliceSize err\n");
         flag=7;
         goto goto_exit;
     }
     if((UploadData->FileId)<=0)
     {
-        printf("FileId err\n");
+        fprintf(fp,"FileId err\n");
         flag=8;
         goto goto_exit;
     }
@@ -610,12 +613,12 @@ int PreUpload(char *FilePath,struct UPLOADDATA *UploadData) {
     {
         UploadData->isMultipart=0;
     }
-//printf("%p\n",cJSON_GetObjectItem(data, "Key"));
-    printf("Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
-    printf("Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
-    printf("UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
-    printf("SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
-    printf("StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
+//fprintf(fp,"%p\n",cJSON_GetObjectItem(data, "Key"));
+    fprintf(fp,"Key:%s\n",cJSON_GetObjectItem(data, "Key")->valuestring);
+    fprintf(fp,"Bucket:%s\n",cJSON_GetObjectItem(data, "Bucket")->valuestring);
+    fprintf(fp,"UploadId:%s\n",cJSON_GetObjectItem(data, "UploadId")->valuestring);
+    fprintf(fp,"SliceSize:%s\n",cJSON_GetObjectItem(data, "SliceSize")->valuestring);
+    fprintf(fp,"StorageNode:%s\n",cJSON_GetObjectItem(data, "StorageNode")->valuestring);
     return 0;
     
 goto_exit:
@@ -643,7 +646,7 @@ int CompleteUpload(struct UPLOADDATA UploadData) {
     char *datastr=(char *)malloc(1024*2);
     sprintf_s(datastr,1024*2,"StorageNode=%s&bucket=%s&key=%s&uploadId=%s&fileId=%d&fileSize=5857&isMultipart=0",
               UploadData.StorageNode,UploadData.Bucket,UploadData.Key,UploadData.UploadId,UploadData.FileId,UploadData.FileData.filesize,UploadData.isMultipart);
-    printf("\ndata:%s\n\n",datastr);
+    fprintf(fp,"\ndata:%s\n\n",datastr);
     int flag=0;
 
     Https_Post((char *)"https://www.123pan.com/b/api/file/upload_complete",datastr,&flag);
@@ -652,15 +655,21 @@ int CompleteUpload(struct UPLOADDATA UploadData) {
 }
 
 int main() {
-    printf("started\n");
-
     
+    printf("started\n");
+    fp=NULL;
+    fp=fopen("info.txt", "w");
+    if (!fp) {
+          fprintf(fp,"Error opening child console - perhaps there is none.\n");
+          //fflush(NULL);
+    }
+    fprintf(fp,"started\n");
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
     memstr=(char *)malloc(MEMSIZE);
     if(!memstr) {
-        printf("mem alloc err\n");
+        fprintf(fp,"mem alloc err\n");
         return 1;
     }
     
@@ -682,21 +691,21 @@ int main() {
     if(0==(PreUpload((char *)".\\x64\\Release\\WindowsProject2.exe",&UploadData)))
     {
        if(UploadData.data!=NULL){
-           printf("111\n");
+           fprintf(fp,"111\n");
            Sleep(500);
            
            if(0==UploadFileChuck(1,2,UploadData)){
-               printf("222\n");
+               fprintf(fp,"222\n");
                Sleep(500);
                CompleteUpload(UploadData);
            }
-           printf("333\n");
+           fprintf(fp,"333\n");
            
            cJSON_Delete(UploadData.data);
            ZeroMemory(&UploadData,sizeof(struct UPLOADDATA));
             
        }
     }
-    
-    printf("ended\n");
+    close(fp);
+    fprintf(fp,"ended\n");
 }
