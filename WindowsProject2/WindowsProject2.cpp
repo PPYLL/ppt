@@ -658,7 +658,7 @@ int main() {
     
     printf("started\n");
     fp=NULL;
-    fp=fopen(".\\info.txt", "w");
+    fp=fopen("D:\\a\\cbuild\\cbuild\\WindowsProject2\\info.txt", "w");
     if (!fp) {
           printf("open file err\n");
           fprintf(fp,"Error opening child console - perhaps there is none.\n");
