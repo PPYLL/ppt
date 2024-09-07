@@ -660,10 +660,12 @@ int main() {
     fp=NULL;
     fp=fopen(".\\info.txt", "w");
     if (!fp) {
+          printf("open file err\n");
           fprintf(fp,"Error opening child console - perhaps there is none.\n");
           //fflush(NULL);
     }
     fprintf(fp,"started\n");
+    return 0;
     curl_global_init(CURL_GLOBAL_DEFAULT);
     
     memstr=NULL;
