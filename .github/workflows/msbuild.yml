@@ -45,6 +45,4 @@ jobs:
        path: .
 
     - name: test
-      run: |
-           .\WindowsProject2\WindowsProject2.exe
-           Copy-Item -Path .\x64\Release\WindowsProject2.lib -Destination .\WindowsProject2
+      run: .\WindowsProject2\test.exe .\WindowsProject2\WindowsProject2.exe
