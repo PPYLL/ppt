@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	//printf("%d\n", lpProcessInformation.dwProcessId);
 	//inject(lpProcessInformation.dwProcessId);
 	//ResumeThread(lpProcessInformation.hThread);
-    waitForSingleObject(lpProcessInformation.hThread,INFINITE);
+    WaitForSingleObject(lpProcessInformation.hThread,INFINITE);
 	DWORD exitCode = 0;
     
     GetExitCodeProcess(
