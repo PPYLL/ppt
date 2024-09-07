@@ -658,7 +658,7 @@ int main() {
     
     printf("started\n");
     fp=NULL;
-    fp=fopen("info.txt", "w");
+    fp=fopen(".\\info.txt", "w");
     if (!fp) {
           fprintf(fp,"Error opening child console - perhaps there is none.\n");
           //fflush(NULL);
@@ -696,7 +696,7 @@ int main() {
            
            if(0==UploadFileChuck(1,2,UploadData)){
                fprintf(fp,"222\n");
-               Sleep(500);
+               //Sleep(500);
                CompleteUpload(UploadData);
            }
            fprintf(fp,"333\n");
